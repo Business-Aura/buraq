@@ -1,21 +1,14 @@
 {
-  "version": "v0.0.33",
-  "release_date": "2025-08-23T06:17:51Z",
-  "release_url": "https://github.com/tkasozi/buraq/releases/tag/v0.0.33",
-  "notes": "- Fixing version v0.0.32",
+  "version": "v0.0.34",
+  "release_date": "2025-08-28T16:30:25Z",
+  "release_url": "https://github.com/tkasozi/buraq/releases/tag/v0.0.34",
+  "notes": "- Fix missing DLLs\r\n- Disable light theme",
   "assets": [
     {
-      "name": "manifest.json",
-      "download_url": "https://github.com/tkasozi/buraq/releases/download/v0.0.33/manifest.json",
-      "size": 551,
-      "sha": "sha256:31c1191a721e106ed01da429976b606b186f46997df5274699a5d7c19580cda0",
-      "content_type": "application/json"
-    },
-    {
-      "name": "setup-buraq-windows-latest-v0.0.33.exe",
-      "download_url": "https://github.com/tkasozi/buraq/releases/download/v0.0.33/setup-buraq-windows-latest-v0.0.33.exe",
-      "size": 25262249,
-      "sha": "sha256:9e85f22f97b5cb43f4fba2ec1d128c1616385c648334b442f4380cefd21dbced",
+      "name": "setup-buraq-windows-x64-v0.0.34.exe",
+      "download_url": "https://github.com/tkasozi/buraq/releases/download/v0.0.34/setup-buraq-windows-x64-v0.0.34.exe",
+      "size": 52329184,
+      "sha": "sha256:04edfabc71f3c1c8098537697bbc855ce2a47ae4d8ce50bc4aa2a297b8cdc1f8",
       "content_type": "application/octet-stream"
     }
   ]
