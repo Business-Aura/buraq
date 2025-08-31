@@ -1,9 +1,9 @@
 {
-  "url": "https://api.github.com/repos/tkasozi/buraq/releases/243251192",
-  "assets_url": "https://api.github.com/repos/tkasozi/buraq/releases/243251192/assets",
-  "upload_url": "https://uploads.github.com/repos/tkasozi/buraq/releases/243251192/assets{?name,label}",
-  "html_url": "https://github.com/tkasozi/buraq/releases/tag/v0.0.35",
-  "id": 243251192,
+  "url": "https://api.github.com/repos/tkasozi/buraq/releases/243743283",
+  "assets_url": "https://api.github.com/repos/tkasozi/buraq/releases/243743283/assets",
+  "upload_url": "https://uploads.github.com/repos/tkasozi/buraq/releases/243743283/assets{?name,label}",
+  "html_url": "https://github.com/tkasozi/buraq/releases/tag/v0.0.36",
+  "id": 243743283,
   "author": {
     "login": "tkasozi",
     "id": 12478423,
@@ -25,22 +25,22 @@
     "user_view_type": "public",
     "site_admin": false
   },
-  "node_id": "RE_kwDOOng-j84Of7f4",
-  "tag_name": "v0.0.35",
+  "node_id": "RE_kwDOOng-j84Ohzoz",
+  "tag_name": "v0.0.36",
   "target_commitish": "main",
-  "name": "v0.0.35",
+  "name": "v0.0.36",
   "draft": false,
   "immutable": false,
   "prerelease": false,
-  "created_at": "2025-08-28T17:07:28Z",
-  "updated_at": "2025-08-28T17:15:50Z",
-  "published_at": "2025-08-28T17:08:44Z",
+  "created_at": "2025-08-31T20:24:12Z",
+  "updated_at": "2025-08-31T20:34:14Z",
+  "published_at": "2025-08-31T20:27:28Z",
   "assets": [
     {
-      "url": "https://api.github.com/repos/tkasozi/buraq/releases/assets/287206226",
-      "id": 287206226,
-      "node_id": "RA_kwDOOng-j84RHmtS",
-      "name": "setup-buraq-windows-x64-v0.0.35.exe",
+      "url": "https://api.github.com/repos/tkasozi/buraq/releases/assets/288185736",
+      "id": 288185736,
+      "node_id": "RA_kwDOOng-j84RLV2I",
+      "name": "setup-buraq-windows-x64-v0.0.36.exe",
       "label": "",
       "uploader": {
         "login": "github-actions[bot]",
@@ -65,15 +65,15 @@
       },
       "content_type": "application/octet-stream",
       "state": "uploaded",
-      "size": 52337051,
-      "digest": "sha256:51db08bdef643a7cea728ac811f7af1274a42fad53fca60cd874c6cf3a06afcd",
+      "size": 53472421,
+      "digest": "sha256:f9427ffec4329d9e7c614680f9cd83828f1b7b5371a014abba18e5a31a7646ba",
       "download_count": 0,
-      "created_at": "2025-08-28T17:15:48Z",
-      "updated_at": "2025-08-28T17:15:50Z",
-      "browser_download_url": "https://github.com/tkasozi/buraq/releases/download/v0.0.35/setup-buraq-windows-x64-v0.0.35.exe"
+      "created_at": "2025-08-31T20:34:11Z",
+      "updated_at": "2025-08-31T20:34:14Z",
+      "browser_download_url": "https://github.com/tkasozi/buraq/releases/download/v0.0.36/setup-buraq-windows-x64-v0.0.36.exe"
     }
   ],
-  "tarball_url": "https://api.github.com/repos/tkasozi/buraq/tarball/v0.0.35",
-  "zipball_url": "https://api.github.com/repos/tkasozi/buraq/zipball/v0.0.35",
-  "body": "Moves PSLang into the background"
+  "tarball_url": "https://api.github.com/repos/tkasozi/buraq/tarball/v0.0.36",
+  "zipball_url": "https://api.github.com/repos/tkasozi/buraq/zipball/v0.0.36",
+  "body": "- Adds Settings page\r\n\r\n- Fixes bugs in v0.0.35"
 }
