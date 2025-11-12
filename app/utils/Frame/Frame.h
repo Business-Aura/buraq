@@ -15,10 +15,14 @@ class QPushButton;
 class QHBoxLayout;
 class QVBoxLayout;
 class QToolBar;
+class QSize;
 
 class Frame final : public QWidget
 {
     Q_OBJECT
+
+public slots:
+    void windowResizeSlot(const QSize &size) const;
 
 private slots:
     void windowDrag(QMouseEvent* event);
@@ -26,10 +30,6 @@ private slots:
 public:
     explicit Frame(QWidget* parent, bool hasToolBar = false, QSize minSize = QSize(1200, 720));
     ~Frame() override;
-
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
 
     QWidget* getTitleBar() const
     {
@@ -80,12 +80,6 @@ signals:
     void closeWindow();
 
 private:
-    // Helper function to update the cursor shape based on position
-    void updateCursorShape(const QPoint &pos);
-
-    // Helper function to calculate which edges the mouse is on
-    Qt::Edges calculateEdges(const QPoint &pos, int margin) const;
-
     std::unique_ptr<QWidget> m_extraButtons;
     std::unique_ptr<QWidget> m_leftSidePanel;
     std::unique_ptr<QWidget> m_titleBar;
@@ -101,10 +95,9 @@ private:
     std::unique_ptr<QPushButton> m_closeButton;
     std::unique_ptr<SettingsManager> settingsManager;
     std::unique_ptr<Frame> m_Frame;
-
-    QWidget* parent{};
-    ToolBarEvent* m_titlebarEvents;
-    UserSettings userPreference;
+    std::unique_ptr<ToolBarEvent> m_titlebarEvents;
+    UserSettings m_userPreference;
+    QWidget* m_frameContainer;
 
     Qt::Edges m_resizeEdges;
     int m_resizeMargin = 5; // The pixel margin to detect resizing

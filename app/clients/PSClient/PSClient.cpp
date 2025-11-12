@@ -5,6 +5,8 @@
 #include "PSClient.h"
 #include <QDebug>
 
+#include "editor/CodeRunner.h"
+
 PSClient::PSClient(QObject *parent) : QObject(parent)
 {
     m_socket = new QTcpSocket(this);
@@ -12,9 +14,10 @@ PSClient::PSClient(QObject *parent) : QObject(parent)
     // Connect signals to handle socket events.
     connect(m_socket, &QTcpSocket::connected, this, &PSClient::onConnected);
     connect(m_socket, &QTcpSocket::readyRead, this, &PSClient::onReadyRead);
+    connect(this, &PSClient::connected, dynamic_cast<CodeRunner *>(parent), &CodeRunner::statusUpdate);
 }
 
-void PSClient::runScript(const QString &script)
+void PSClient::runScript(const QString &script) const
 {
     qDebug() << "Attempting to connect to server...";
     m_socket->connectToHost("127.0.0.1", 12345);
@@ -35,7 +38,7 @@ void PSClient::runScript(const QString &script)
 
 void PSClient::onConnected()
 {
-    qDebug() << "Successfully connected to the C# server.";
+    emit connected( "Running script...");
 }
 
 void PSClient::onReadyRead()

@@ -27,34 +27,40 @@
 #include "Minion.h"
 #include <QVariant>
 
-
-Minion::Minion(QObject *parent) : QObject(parent) {
+Minion::Minion(QObject *qObject) : QObject(qObject) {
 	// empty
 }
 
-void Minion::process(const std::function<QVariant()>& task)
+void Minion::addTask(const std::function<QVariant()>& task) {
+	m_taskQueue.push(task);
+
+	// If the worker is idle (queue was empty), kick off the processing.
+	// We call our own slot via the event loop.
+	if (m_taskQueue.size() == 1) {
+		QMetaObject::invokeMethod(this, "processNextTaskInQueue", Qt::QueuedConnection);
+	}
+}
+
+void Minion::processNextTaskInQueue()
 {
-	emit progressUpdated(25);
-	if (!task) {
-		emit resultReady(QVariant());
-		emit workFinished();
-		return;
+	if (m_taskQueue.empty()) {
+		qDebug() << "Task queue is empty.";
+		return; // Nothing to do
 	}
 
-	QVariant result;
+	qDebug() << "Processing next task...";
 
-	try {
-		// Execute the provided task function
-		result = task(); // Execute the generic task
-	} catch (const std::exception &e) {
-		// Optionally, wrap the error message in the QVariant
-		result = QVariant("Error: " + QString(e.what()));
-	} catch (...) {
-		// Optionally, wrap the error message in the QVariant
-		result = QVariant("Error: Unknown exception");
+	// Get, run, and pop the task
+	const auto task = m_taskQueue.front();
+	m_taskQueue.pop();
+	task(); // Execute the task
+
+	// If there are more tasks left, post an event to process the next one.
+	if (!m_taskQueue.empty()) {
+		QMetaObject::invokeMethod(this, "processNextTaskInQueue", Qt::QueuedConnection);
+	} else {
+		qDebug() << "All tasks finished!";
 	}
-	emit resultReady(result);
-	emit workFinished();
 }
 
 void Minion::processScript(const QString& script)

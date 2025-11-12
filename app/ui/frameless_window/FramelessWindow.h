@@ -5,10 +5,10 @@
 #ifndef FRAMELESS_WINDOW_H
 #define FRAMELESS_WINDOW_H
 
+#include <qevent.h>
 #include <QMainWindow>
 #include <QWidget>
 
-#include "Filters/Toolbar/ToolBarEvent.h"
 #include "settings/UserSettings.h"
 #include "settings/SettingManager/SettingsManager.h"
 
@@ -63,18 +63,19 @@ private:
     // Helper function to calculate which edges the mouse is on
     [[nodiscard]] Qt::Edges calculateEdges(const QPoint& pos, int margin) const;
 
-    void initContentAreaLayout();
+    void initContentAreaLayout(QWidget* contentArea);
 
     ThemeManager& themeManager;
 
     std::unique_ptr<PluginManager> pluginManager;
     std::unique_ptr<CustomDrawer> m_drawer;
+    std::unique_ptr<QGridLayout> m_centralWidgetLayout;
     std::unique_ptr<OutputDisplay> m_outPutArea;
     std::unique_ptr<QGridLayout> m_placeHolderLayout;
     std::unique_ptr<Editor> m_editor;
     std::unique_ptr<ToolBar> m_toolBar;
     std::unique_ptr<buraq::buraq_api> api_context;
-    std::unique_ptr<ToolBarEvent> m_titlebarEvents;
+    std::unique_ptr<Frame> m_Frame;
 
     // buttons
     std::unique_ptr<QPushButton> m_folderButton;
@@ -83,22 +84,6 @@ private:
     std::unique_ptr<QPushButton> m_minimizeButton;
     std::unique_ptr<QPushButton> m_maximizeButton;
     std::unique_ptr<QPushButton> m_closeButton;
-
-    // Widgets
-    std::unique_ptr<QWidget> m_frameContainer;
-    std::unique_ptr<QWidget> m_leftSidePanel;
-    std::unique_ptr<QWidget> m_titleBar;
-    std::unique_ptr<QWidget> m_topPanel;
-    std::unique_ptr<QWidget> m_rightSidePanel;
-    std::unique_ptr<QWidget> m_bottomPanel;
-    std::unique_ptr<QWidget> m_centralWidget;
-
-    // Layouts
-    std::unique_ptr<QVBoxLayout> m_mainLayout;
-    std::unique_ptr<QVBoxLayout> m_leftSidePanelLayout;
-    std::unique_ptr<QVBoxLayout> m_rightSidePanelLayout;
-    std::unique_ptr<QHBoxLayout> m_bottomPanelLayout;
-    std::unique_ptr<SettingsManager> settingsManager;
 
     // splitters
      std::unique_ptr<QSplitter> rightSideSplitter;
@@ -113,6 +98,12 @@ private:
     int m_resizeMargin = 5; // The pixel margin to detect resizing
     QPoint m_dragPosition; // To store the offset of the mouse click from the m_window's top-left
 
+protected:
+    void resizeEvent(QResizeEvent *event) override {
+        emit windowResize(event->size());
+        // Always call the base class implementation.
+        QMainWindow::resizeEvent(event);
+    }
 signals:
     void closeApp();
     void windowResize(QSize size);

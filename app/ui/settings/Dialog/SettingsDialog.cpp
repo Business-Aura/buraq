@@ -25,19 +25,19 @@
 
 SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent),
-      m_titleBar(std::make_unique<QWidget>(this)),
       m_Frame(std::make_unique<Frame>(this)),
       settingsManager(new SettingsManager()),
       themeManager(ThemeManager::instance())
 {
     setWindowTitle("Settings");
+    setLayout(m_Frame->layout());
     // Set the m_window flag to remove the default frame
     this->setWindowFlags(Qt::FramelessWindowHint);
-    // allow the m_window to be transparent if you have rounded corners.
-    this->setAttribute(Qt::WA_TranslucentBackground);
+    // // allow the m_window to be transparent if you have rounded corners.
+    // this->setAttribute(Qt::WA_TranslucentBackground);
 
     // Load user preferences
-    userPreference = settingsManager->loadSettings();
+    userPreference = SettingsManager::loadSettings();
 
     // Create a central widget to hold the main layout.
     // QMainWindow requires a central widget to manage content.
@@ -65,10 +65,14 @@ SettingsDialog::SettingsDialog(QWidget* parent)
         mainLayout->addWidget(m_tabWidget);
         mainLayout->addWidget(m_buttonBox);
     }
+    const auto toolkitBar = m_Frame->getToolKitBar();
+    const auto blankLayout = new QWidget(toolkitBar);
+    blankLayout->setFixedHeight(35);
+    blankLayout->setObjectName("topPanel");
+    toolkitBar->layout()->addWidget(new QLabel("Active View:")); // Add the File menu first
 
-    const auto windowConfig = Config::singleton().getWindow();
     // Set an initial size
-    resize(windowConfig->normalSize, windowConfig->minHeight);
+    setMinimumSize(1200, 800);
     hide();
 }
 
@@ -76,7 +80,7 @@ SettingsDialog::~SettingsDialog() = default;
 
 void SettingsDialog::applyChanges() const
 {
-    settingsManager->saveSettings(userPreference);
+    SettingsManager::saveSettings(userPreference);
 
     // update the UI
     themeManager.setAppTheme(userPreference.theme);
@@ -104,7 +108,6 @@ QWidget* SettingsDialog::createAppearancePage()
     themeComboBox->setObjectName("themeComboBox"); // For retrieving the value later
     themeComboBox->addItems({"Light", "Dark", "System Default"});
     themeLayout->addRow(new QLabel("Application Theme:", this), themeComboBox);
-    qDebug() << "userPreference.theme: " << userPreference.theme;
     themeComboBox->setCurrentIndex(userPreference.theme);
     connect(themeComboBox, &QComboBox::currentIndexChanged, this, &SettingsDialog::setTheme);
 

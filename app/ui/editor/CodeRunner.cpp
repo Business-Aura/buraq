@@ -23,7 +23,7 @@ CodeRunner::CodeRunner(QWidget* parent)
         " & "
         "Highlighted code.");
 
-    CodeRunner::setupSignals();
+    setupSignals();
 }
 
 // Call this once in your CodeRunner's constructor.
@@ -117,7 +117,7 @@ void CodeRunner::handleProgress(int i)
 
 void CodeRunner::handleWorkerFinished()
 {
-    emit statusUpdate("Completed!");
+    emit statusUpdate("Ready..");
 
     m_workerThread = nullptr;
     m_minion = nullptr;
@@ -153,4 +153,5 @@ void CodeRunner::setupSignals()
 
     // Signal to update the out component in AppUI component for the completed process
     connect(this, &CodeRunner::updateOutputResult, window, &FramelessWindow::processResultSlot);
+    connect(this, &CodeRunner::statusUpdate, m_psClient, &PSClient::connected);
 }

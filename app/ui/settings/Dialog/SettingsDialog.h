@@ -34,7 +34,6 @@ private slots:
     void setTheme(const int index);
 
 private:
-    std::unique_ptr<QWidget> m_titleBar;
     std::unique_ptr<Frame> m_Frame;
 
     SettingsManager* settingsManager;

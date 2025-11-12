@@ -9,22 +9,26 @@
 
 /* General Application Colors & Typography */
 QWidget, QDialog {
-    background-color: transparent;
+    background-color: #232323;
     color: #E0E0E0;            /* Light text */
     font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
     font-size: 10pt;
 }
 
 QWidget#Frame {
-  background-color: #232323; /* Dark background */
+  /* background-color: #232323;  Dark background */
   border: 1px solid #00BCD4;
 }
 
-QWidget#leftPanel {
-  background-color: #333333; /* Dark background */
+QWidget#centralDiv {
+  width: 100%;
 }
 
-QWidget#rightPanel {
+QWidget#rightPanel,
+QWidget#bottomPanel,
+QWidget#topPanel,
+QWidget#leftPanel,
+QWidget#secondaryTitleBar {
   background-color: #333333; /* Dark background */
 }
 
@@ -33,6 +37,7 @@ QAbstractItemView {
     selection-background-color: #00568B; /* Darker Blue for selection */
     selection-color: #FFFFFF;
 }
+
 QAbstractItemView::item:selected {
     background-color: #00568B; /* Darker Blue for selection */
     color: #FFFFFF;

@@ -29,6 +29,7 @@
 
 #include <QObject>
 #include <QString>
+#include <queue>
 
 class Minion final : public QObject {
 Q_OBJECT
@@ -48,13 +49,14 @@ signals:
 	void runScriptRequested(const QString &script);
 
 public slots:
+	void processScript(const QString& script);
 	// This is the main entry point for the worker's task.
 	// It will be called when the QThread starts.
-	void process(const std::function<QVariant()>& task);
-	// Slot to start the work
 	void doWork(const std::function<QVariant()>& task);
 
-	void processScript(const QString& script);
+	// Adds a worker's task.
+	void addTask(const std::function<QVariant()>& task);
+	void processNextTaskInQueue();
 
 public:
 	explicit Minion(QObject *qObject);
@@ -65,6 +67,7 @@ public:
 
 private:
 	// No members object is moved to a thread
+	std::queue<std::function<QVariant()>> m_taskQueue;
 };
 
 

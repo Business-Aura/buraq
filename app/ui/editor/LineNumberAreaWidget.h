@@ -24,7 +24,7 @@ protected:
 private:
 	buraq::EditorState m_editorState{.lineHeight = 19};
 // You might want to store font, colors, etc., as members
-// or get them from the parent EditorMargin if needed.
+// or get them from the m_parent EditorMargin if needed.
 };
 
 #endif //LINE_NUMBER_AREA_WIDGET_H

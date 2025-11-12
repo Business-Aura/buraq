@@ -37,9 +37,11 @@
 #include <qcoreapplication.h>
 #include <QMouseEvent>
 #include <QSqlError>
+#include <QThread>
 
 #include "buraq.h"
 #include "Config.h"
+#include "Minion.h"
 #include "PluginManager.h"
 #include "Utils.h"
 #include "clients/VersionClient/VersionRepository.h"
@@ -62,19 +64,22 @@ AppUi::AppUi(QObject* parent) : QObject(parent)
     {
         file_log("db_conn() EXIT_FAILURE..");
         // failed to connect to the database
-        // return EXIT_FAILURE;
+        exit(1);
     }
 
     // Initialize the database:
     if (const QSqlError err = database::init_db(); err.type() != QSqlError::NoError)
     {
         file_log("Error executing initializing db:" + err.text().toStdString());
-        // return EXIT_FAILURE;
+        exit(2);
     }
 
     // user's home dir should be the default location when the app starts.
     // In the later release, save user's last dir/path
     std::filesystem::current_path(ItoolsNS::get_user_home_directory());
+
+    // Register the custom type before it can be used in any signal/slot connections
+    qRegisterMetaType<std::function<QVariant()>>("std::function<QVariant()>");
 
     // Init application views
     initAppLayout();
@@ -85,9 +90,21 @@ AppUi::AppUi(QObject* parent) : QObject(parent)
 
 AppUi::~AppUi()
 {
-    // When the MyApp object is destroyed, m_bridgeProcess's destructor
+    // When the AppUi object is destroyed, m_bridgeProcess's destructor
     // will be called automatically, terminating the child process.
     delete m_bridgeProcess;
+
+    if (m_workerThread && m_workerThread->isRunning())
+    {
+        m_workerThread->requestInterruption();
+        m_workerThread->quit(); // Ask event loop to quit
+        if (!m_workerThread->wait(5000))
+        {
+            // Wait for max 5 seconds
+            m_workerThread->terminate(); // Force terminate (last resort)
+            m_workerThread->wait(); // Wait for termination
+        }
+    }
 }
 
 void AppUi::showUi() const
@@ -129,12 +146,44 @@ void AppUi::initAppContext()
 
 void AppUi::onWindowFullyLoaded()
 {
-    initPSLangSupport();
+    // Setup only once when the window is fully loaded.
+    setupWorker();
 
-    verifyApplicationVersion();
+    // initialize Powershell support
+    QMetaObject::invokeMethod(m_minion, "addTask", Qt::QueuedConnection,
+       Q_ARG(std::function<QVariant()>, [this]() -> QVariant {
+           qDebug() << "  [Task 1] Initialize Powershell support...";
+           return initPSLangSupport();
+       }));
+
+    QMetaObject::invokeMethod(m_minion, "addTask", Qt::QueuedConnection,
+       Q_ARG(std::function<QVariant()>, [this]() -> QVariant {
+           qDebug() << "  [Task 2] Checking for new Versions...";
+           return verifyApplicationVersion();
+       }));
 }
 
-void AppUi::initPSLangSupport()
+// Call this once in your CodeRunner's constructor.
+void AppUi::setupWorker()
+{
+    // --- 1. Create and Connect Objects ---
+    m_workerThread = new QThread(this);
+    m_minion = new Minion();
+    m_minion->moveToThread(m_workerThread);
+
+    // --- 2. Connect Signals and Slots ---
+
+    // Minion (worker thread) initialize Powershell language support
+    connect(m_minion, &Minion::doWork, this, &AppUi::initPSLangSupport);
+
+    // Clean up the thread and worker when the thread's event loop finishes.
+    connect(m_workerThread, &QThread::finished, m_minion, &QObject::deleteLater);
+    connect(m_workerThread, &QThread::finished, m_workerThread, &QObject::deleteLater);
+
+    m_workerThread->start();
+}
+
+QVariant AppUi::initPSLangSupport()
 {
     const std::filesystem::path psLangSupportPath = api_context->searchPath / "PS.Bridge/Buraq.Bridge.exe";
 
@@ -151,9 +200,11 @@ void AppUi::initPSLangSupport()
     }
 
     emit updateStatusBar("PSLang Support Ready", 30000);
+
+    return {};
 }
 
-void AppUi::verifyApplicationVersion()
+QVariant AppUi::verifyApplicationVersion()
 {
     VersionRepository repo(api_context.get());
 
@@ -163,7 +214,7 @@ void AppUi::verifyApplicationVersion()
         {
             // No version was set
             qDebug() << "app version is empty or already upto date!";
-            return;
+            return {};
         }
 
         VersionUpdateDialog versionUpdater(m_framelessWindow.get());
@@ -217,6 +268,8 @@ void AppUi::verifyApplicationVersion()
         qDebug() << "Update failed to connect to github repository.";
         emit updateStatusBar("Failed to get updates. Check connection!", 10000);
     }
+
+    return {};
 }
 
 void AppUi::launchUpdaterAndExit(
