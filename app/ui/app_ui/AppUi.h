@@ -28,6 +28,7 @@ class AppUi final : public QObject
 
 private slots:
     void onWindowFullyLoaded();
+    void setupWorker();
 
 signals:
     void updateStatusBar(const QString&, int timeOut);
@@ -54,8 +55,8 @@ private:
     QThread *m_workerThread{};
     Minion *m_minion{};
 
-    void initPSLangSupport();
-    void verifyApplicationVersion();
+    QVariant initPSLangSupport();
+    QVariant verifyApplicationVersion();
     void initAppLayout();
     void initAppContext();
     static void launchUpdaterAndExit(

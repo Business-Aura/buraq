@@ -3,11 +3,7 @@
 //
 
 #include <QGridLayout>
-#include <QFile>
-#include <QPlainTextEdit>
-#include <QPainter>
 #include <QTextBlock>
-#include <QTextEdit>
 #include <QString>
 #include <QMouseEvent>
 #include <QTextStream>  // For text files
@@ -270,7 +266,7 @@ void Editor::setupSignals()
     connect(this, &Editor::statusUpdate, appUi_, &FramelessWindow::processStatusSlot);
 
     // Signal to update status bar in AppUI component for the running process
-    connect(this, &Editor::lineNumberAreaPaintEventSignal, appUi_->getEditorMargin(), &EditorMargin::updateState);
+    connect(this, &Editor::lineNumberAreaPaintEventSignal, m_editorMargin.get(), &EditorMargin::updateState);
 }
 
 void Editor::autoSave()

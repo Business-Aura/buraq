@@ -11,11 +11,11 @@
 
 #include <QPushButton>
 #include <QVBoxLayout>
-#include <QToolBar>
+#include <QSize>
 
 #include "ToolBar.h"
 
-Frame::Frame(QWidget* parent,  bool hasToolBar, const QSize minSize)
+Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
     : QWidget(parent),
       m_titleBar(std::make_unique<QWidget>(this)),
       m_topPanel(std::make_unique<QWidget>(this)),
@@ -25,20 +25,19 @@ Frame::Frame(QWidget* parent,  bool hasToolBar, const QSize minSize)
       m_dragPosition(QPoint(0, 0))
 {
     // 1. Create a main container widget. This will be the single central widget.
-    QWidget* frameContainer = new QWidget(this);
-    frameContainer->setObjectName("Frame");
-    frameContainer->setMinimumSize(minSize);
+    m_frameContainer = new QWidget(this);
+    m_frameContainer->setObjectName("Frame");
+    // m_frameContainer->resize(parent->size());
 
     // 2. Create the grid layout that the container will use.
-    QGridLayout* mainGridLayout = new QGridLayout(frameContainer);
+    QGridLayout* mainGridLayout = new QGridLayout(m_frameContainer);
     mainGridLayout->setContentsMargins(0, 0, 0, 0); // No margins for a seamless frame
     mainGridLayout->setSpacing(0); // No spacing between frame parts
 
     // titleBar
     {
         const auto m_titleBar_ = m_titleBar.get();
-        m_titlebarEvents = new ToolBarEvent(m_titleBar_);
-        m_titleBar_->installEventFilter(m_titlebarEvents);
+        m_titlebarEvents = std::make_unique<ToolBarEvent>(m_titleBar_);
         m_titleBar_->setFixedHeight(35); // Set your desired title bar height
         m_titleBar_->setObjectName("customTitleBar"); // For styling
 
@@ -94,6 +93,7 @@ Frame::Frame(QWidget* parent,  bool hasToolBar, const QSize minSize)
         const auto toolKitLayout = new QHBoxLayout(m_topPanel.get());
         toolKitLayout->setContentsMargins(0, 0, 0, 0);
         toolKitLayout->setSpacing(0);
+        toolKitLayout->setObjectName("topPanel");
     }
 
     // left side panel
@@ -131,6 +131,7 @@ Frame::Frame(QWidget* parent,  bool hasToolBar, const QSize minSize)
         m_bottomPanelLayout->setContentsMargins(0, 0, 0, 0); // No margins for the main layout
         m_bottomPanelLayout->setSpacing(0);
         m_bottomPanel->setFixedHeight(25);
+        m_bottomPanel->setObjectName("bottomPanel");
     }
 
     const auto middleContentContainer = new QWidget(this);
@@ -144,10 +145,20 @@ Frame::Frame(QWidget* parent,  bool hasToolBar, const QSize minSize)
 
     // 4. Add the widgets to the grid layout at specific row/column positions.
     // The format is: addWidget(widget, row, column, rowSpan, columnSpan)
-    mainGridLayout->addWidget(m_titleBar.get(), 0, 0, 1, 3); // Row 0, Col 0, spans 1 row, 3 columns
-    mainGridLayout->addWidget(m_topPanel.get(), 1, 0, 1, 2); // Row 1, Col 1
-    mainGridLayout->addWidget(middleContentContainer, 2, 0); // Row 2, Col 0
-    mainGridLayout->addWidget(m_bottomPanel.get(), 3, 0); // Row 3, Col 0, spans 1 row, 3 columns
+    if (hasToolBar)
+    {
+        mainGridLayout->addWidget(m_titleBar.get(), 0, 0, 1, 3); // Row 0, Col 0, spans 1 row, 3 columns
+        mainGridLayout->addWidget(m_topPanel.get(), 1, 0, 1, 2); // Row 1, Col 1
+        mainGridLayout->addWidget(middleContentContainer, 2, 0); // Row 2, Col 0
+        mainGridLayout->addWidget(m_bottomPanel.get(), 3, 0); // Row 3, Col 0, spans 1 row, 3 columns
+    }
+    else
+    {
+        m_titleBar->setObjectName("secondaryTitleBar");
+        mainGridLayout->addWidget(m_titleBar.get(), 0, 0, 1, 0); // Row 0, Col 0, spans 1 row, 3 columns
+        mainGridLayout->addWidget(middleContentContainer, 1, 0); // Row 2, Col 0
+        mainGridLayout->addWidget(m_bottomPanel.get(), 2, 0); // Row 3, Col 0, spans 1 row, 3 columns
+    }
 
     // Set other rows/columns to have 0 stretch so they don't expand.
     mainGridLayout->setRowStretch(0, 0);
@@ -155,12 +166,19 @@ Frame::Frame(QWidget* parent,  bool hasToolBar, const QSize minSize)
     mainGridLayout->setColumnStretch(2, 0);
 
     connect(m_closeButton.get(), &QPushButton::clicked, parent, &QWidget::close);
-    connect(m_titlebarEvents, &ToolBarEvent::dragWindow, this, &Frame::windowDrag);
+    connect(m_titlebarEvents.get(), &ToolBarEvent::dragWindow, this, &Frame::windowDrag);
 }
 
 Frame::~Frame()
 {
     // smart pointers are cleaned up
+    delete m_frameContainer;
+}
+
+void Frame::windowResizeSlot(const QSize& size) const
+{
+    qDebug() << "WindowResizeSlot " << size;
+    m_frameContainer->setFixedSize(size);
 }
 
 void Frame::windowDrag(QMouseEvent* event)
@@ -168,89 +186,4 @@ void Frame::windowDrag(QMouseEvent* event)
     m_dragPosition = event->globalPosition().toPoint();
     move(m_dragPosition);
     event->accept();
-}
-
-Qt::Edges Frame::calculateEdges(const QPoint& pos, const int margin) const
-{
-    Qt::Edges edges;
-    if (pos.x() < margin) edges |= Qt::LeftEdge;
-    if (pos.x() > width() - margin) edges |= Qt::RightEdge;
-    if (pos.y() < margin) edges |= Qt::TopEdge;
-    if (pos.y() > height() - margin) edges |= Qt::BottomEdge;
-    return edges;
-}
-
-void Frame::updateCursorShape(const QPoint& pos)
-{
-    if (m_resizing || parent == nullptr)
-        return;
-
-    m_resizeEdges = calculateEdges(pos, m_resizeMargin);
-
-    if (m_resizeEdges == (Qt::TopEdge | Qt::LeftEdge) || m_resizeEdges == (Qt::BottomEdge | Qt::RightEdge))
-        parent->setCursor(Qt::SizeFDiagCursor);
-    else if (m_resizeEdges == (Qt::TopEdge | Qt::RightEdge) || m_resizeEdges == (Qt::BottomEdge | Qt::LeftEdge))
-        parent->setCursor(Qt::SizeBDiagCursor);
-    else if (m_resizeEdges & (Qt::LeftEdge | Qt::RightEdge))
-        parent->setCursor(Qt::SizeHorCursor);
-    else if (m_resizeEdges & (Qt::TopEdge | Qt::BottomEdge))
-        parent->setCursor(Qt::SizeVerCursor);
-    else
-        parent->setCursor(Qt::ArrowCursor);
-}
-
-void Frame::mousePressEvent(QMouseEvent* event)
-{
-    if (event->button() == Qt::LeftButton)
-    {
-        if (m_resizeEdges != 0)
-        {
-            m_resizing = true;
-            m_dragPosition = event->globalPosition().toPoint();
-            event->accept();
-            return;
-        }
-    }
-    QWidget::mousePressEvent(event);
-}
-
-void Frame::mouseMoveEvent(QMouseEvent* event)
-{
-    if (m_resizing)
-    {
-        const QPoint currentPos = event->globalPosition().toPoint();
-        const QPoint delta = currentPos - m_dragPosition;
-        QRect newGeometry = geometry();
-
-        if (m_resizeEdges & Qt::LeftEdge) newGeometry.setLeft(newGeometry.left() + delta.x());
-        if (m_resizeEdges & Qt::RightEdge) newGeometry.setRight(newGeometry.right() + delta.x());
-        if (m_resizeEdges & Qt::TopEdge) newGeometry.setTop(newGeometry.top() + delta.y());
-        if (m_resizeEdges & Qt::BottomEdge) newGeometry.setBottom(newGeometry.bottom() + delta.y());
-
-        if (newGeometry.width() < minimumWidth()) newGeometry.setLeft(geometry().left());
-        if (newGeometry.height() < minimumHeight()) newGeometry.setTop(geometry().top());
-
-        setGeometry(newGeometry);
-        m_dragPosition = currentPos;
-    }
-    else if (m_dragging)
-    {
-        move(event->globalPosition().toPoint() - m_dragPosition);
-    }
-    else
-    {
-        updateCursorShape(event->pos());
-    }
-    QWidget::mouseMoveEvent(event);
-}
-
-void Frame::mouseReleaseEvent(QMouseEvent* event)
-{
-    if (event->button() == Qt::LeftButton)
-    {
-        m_dragging = false;
-        m_resizing = false;
-        setCursor(Qt::ArrowCursor);
-    }
-    QWidget::mouseReleaseEvent(event);
 }

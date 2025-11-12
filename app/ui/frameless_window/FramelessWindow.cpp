@@ -29,17 +29,13 @@ FramelessWindow::FramelessWindow(QWidget* parent)
       themeManager(ThemeManager::instance()),
       m_outPutArea(std::make_unique<OutputDisplay>(this)),
       m_editor(std::make_unique<Editor>(this)),
-      m_frameContainer(std::make_unique<QWidget>(this)),
-      m_titleBar(std::make_unique<QWidget>(this)),
-      m_topPanel(std::make_unique<QWidget>(this)),
-      m_rightSidePanel(std::make_unique<QWidget>(this)),
-      m_bottomPanel(std::make_unique<QWidget>(this)),
-      m_centralWidget(std::make_unique<QWidget>(this)),
       userPreferences(SettingsManager::loadSettings()),
       m_dragPosition(QPoint(0, 0))
 {
-    resize(userPreferences.windowSize);
+    resize(QSize(1200, 700));
     //move(userPreferences.windowPosition);
+
+    m_Frame = std::make_unique<Frame>(this, true, userPreferences.windowSize);
 
     // Initialize the ThemeManager instance
     installEventFilter(&themeManager);
@@ -52,169 +48,60 @@ FramelessWindow::FramelessWindow(QWidget* parent)
     setWindowIcon(appLogo);
 
     // Set the central widget for the QMainWindow
-    // 1. Create a main container widget. This will be the single central widget.
-    setCentralWidget(m_frameContainer.get());
-    m_frameContainer->setObjectName("Frame");
+    setCentralWidget(m_Frame.get());
 
-    // 2. Create the grid layout that the container will use.
-    QGridLayout* mainGridLayout = new QGridLayout(m_frameContainer.get());
-    mainGridLayout->setContentsMargins(0, 0, 0, 0); // No margins for a seamless frame
-    mainGridLayout->setSpacing(0); // No spacing between frame parts
+    // Custom Title Bar
+    const auto m_titleBar_ = m_Frame->getTitleBar();
 
-    // titleBar
+    m_minimizeButton = std::make_unique<QPushButton>("—", m_titleBar_); // Underscore for minimize
+    m_minimizeButton->setObjectName("minimizeButton"); // For specific styling
+
+    m_maximizeButton = std::make_unique<QPushButton>("☐", m_titleBar_); // Square for maximize/restore
+    m_maximizeButton->setObjectName("maximizeButton"); // For specific styling
+
+    m_settingsButton = std::make_unique<QPushButton>("⋮", m_titleBar_);
+    m_settingsButton->setToolTip("IDE and Project Settings");
+    m_settingsButton->setObjectName("settingGearButton");
+
+    m_settingsButton->setFixedSize(40, m_titleBar_->height());
+    m_minimizeButton->setFixedSize(40, m_titleBar_->height());
+    m_maximizeButton->setFixedSize(40, m_titleBar_->height());
+
+    const auto titleBarLayout = m_Frame->getExtraButtonsLayout();
+    titleBarLayout->addStretch();
+    titleBarLayout->addWidget(m_settingsButton.get());
+    titleBarLayout->addWidget(m_minimizeButton.get());
+    titleBarLayout->addWidget(m_maximizeButton.get());
+
+    // Add Tool bar
+    const auto toolkitBar = m_Frame->getToolKitBar();
+    m_toolBar = std::make_unique<ToolBar>(toolkitBar);
+    m_toolBar->setFixedHeight(35);
+    m_toolBar->addFileMenu(); // Add the File menu first
+    if (const auto layout = toolkitBar->layout(); layout)
     {
-        const auto m_titleBar_ = m_titleBar.get();
-        m_titlebarEvents = std::make_unique<ToolBarEvent>(m_titleBar_);
-        m_titleBar_->setFixedHeight(35); // Set your desired title bar height
-        m_titleBar_->setObjectName("customTitleBar"); // For styling
-
-        const auto titleBarLayout = new QHBoxLayout(m_titleBar_);
-        titleBarLayout->setContentsMargins(0, 0, 0, 0);
-        titleBarLayout->setSpacing(0);
-
-        m_closeButton = std::make_unique<QPushButton>("✕", m_titleBar_); // X for close
-        m_closeButton->setObjectName("closeButton"); // For specific styling
-        m_closeButton->setFixedSize(m_titleBar_->height(), m_titleBar_->height());
-
-        m_minimizeButton = std::make_unique<QPushButton>("—", m_titleBar_); // Underscore for minimize
-        m_minimizeButton->setObjectName("minimizeButton"); // For specific styling
-
-        m_maximizeButton = std::make_unique<QPushButton>("☐", m_titleBar_); // Square for maximize/restore
-        m_maximizeButton->setObjectName("maximizeButton"); // For specific styling
-
-        m_settingsButton = std::make_unique<QPushButton>("⋮", m_titleBar_);
-        m_settingsButton->setToolTip("IDE and Project Settings");
-        m_settingsButton->setObjectName("settingGearButton");
-
-        m_settingsButton->setFixedSize(35, m_titleBar_->height());
-        m_minimizeButton->setFixedSize(35, m_titleBar_->height());
-        m_maximizeButton->setFixedSize(35, m_titleBar_->height());
-
-        // logo and version
-        const auto logoAndVersion = new QWidget(m_titleBar_);
-        const auto logoAndVersionLayout = new QHBoxLayout(logoAndVersion);
-        logoAndVersionLayout->setContentsMargins(0, 0, 0, 0);
-
-        QPushButton* iconButton = new QPushButton(m_titleBar_);
-        iconButton->setIcon(parent->windowIcon());
-        iconButton->setIconSize(QSize(32, 32));
-        iconButton->setFixedSize(m_titleBar_->height(), m_titleBar_->height()); // Give some padding around the icon
-        iconButton->setFlat(true); // Makes it look less like a bulky button
-        iconButton->move(20, 70);
-
-        const auto version = new QLabel(m_titleBar_);
-        version->setObjectName("titleText");
-        version->setText("v2.0.0");
-
-        logoAndVersionLayout->addWidget(iconButton);
-        logoAndVersionLayout->addStretch();
-        logoAndVersionLayout->addWidget(version);
-
-        titleBarLayout->addWidget(logoAndVersion);
-
-        // end Logo and Version
-
-        titleBarLayout->addStretch();
-        titleBarLayout->addStretch();
-        titleBarLayout->addWidget(m_settingsButton.get());
-        titleBarLayout->addWidget(m_minimizeButton.get());
-        titleBarLayout->addWidget(m_maximizeButton.get());
-        titleBarLayout->addWidget(m_closeButton.get());
+        layout->addWidget(m_toolBar.get());
     }
 
-    // Toolkit
-    {
-        m_topPanel->setFixedHeight(35); // Set your desired title bar height
-        const auto toolKitLayout = new QHBoxLayout(m_topPanel.get());
-        toolKitLayout->setContentsMargins(0, 0, 0, 0);
-        toolKitLayout->setSpacing(0);
-        toolKitLayout->setObjectName("topPanel");
+    // Content Area (example)
+    initContentAreaLayout(m_Frame->getMainContentWidget());
 
-        // Add Tool bar
-        m_toolBar = std::make_unique<ToolBar>(m_topPanel.get());
-        m_toolBar->setFixedHeight(35);
-        m_toolBar->addFileMenu(); // Ad d the File menu first
-        toolKitLayout->addWidget(m_toolBar.get());
-    }
-
-    // left side panel
-    {
-        m_leftSidePanel = std::make_unique<QWidget>(this);
-        m_leftSidePanelLayout = std::make_unique<QVBoxLayout>(m_leftSidePanel.get());
-        m_leftSidePanelLayout->setContentsMargins(0, 0, 0, 0); // No margins for the main layout
-        m_leftSidePanelLayout->setSpacing(0);
-
-        m_leftSidePanel->setFixedWidth(35);
-        m_leftSidePanel->setObjectName("leftPanel");
-    }
-
-    // Central area
-    {
-        m_mainLayout = std::make_unique<QVBoxLayout>(m_centralWidget.get()); // Apply layout to the central widget
-        m_mainLayout->setContentsMargins(0, 0, 0, 0); // No margins for the main layout
-        m_mainLayout->setSpacing(0);
-        m_centralWidget->setObjectName("centralDiv");
-
-        initContentAreaLayout();
-    }
-
-    // right sine panel
-    {
-        m_rightSidePanel = std::make_unique<QWidget>(this);
-        m_rightSidePanelLayout = std::make_unique<QVBoxLayout>(m_rightSidePanel.get());
-        m_rightSidePanelLayout->setContentsMargins(0, 0, 0, 0); // No margins for the main layout
-        m_rightSidePanelLayout->setSpacing(0);
-        m_rightSidePanel->setFixedWidth(35);
-        m_rightSidePanel->setObjectName("rightPanel");
-    }
-
-    // bottom panel
-    {
-        m_bottomPanelLayout = std::make_unique<QHBoxLayout>(m_bottomPanel.get());
-        m_bottomPanelLayout->setContentsMargins(0, 0, 0, 0); // No margins for the main layout
-        m_bottomPanelLayout->setSpacing(0);
-        m_bottomPanel->setFixedHeight(25);
-        m_bottomPanel->setObjectName("bottomPanel");
-
-        // Status bar
-        m_statusBar = new QStatusBar(m_bottomPanel.get());
-        m_statusBar->setObjectName("appStatusBar");
-        m_statusBar->setFixedHeight(25);
-        m_bottomPanelLayout->addWidget(m_statusBar);
-    }
-
-    // Grid layouts
-    {
-        const auto middleContentContainer = new QWidget(this);
-        QHBoxLayout* mainContentLayout = new QHBoxLayout(middleContentContainer);
-        mainContentLayout->setContentsMargins(0, 0, 0, 0); // No margins for a seamless frame
-        mainContentLayout->setSpacing(0);
-
-        mainContentLayout->addWidget(m_leftSidePanel.get(), 0);
-        mainContentLayout->addWidget(m_centralWidget.get(), 1);
-        mainContentLayout->addWidget(m_rightSidePanel.get(), 0);
-
-        // 4. Add the widgets to the grid layout at specific row/column positions.
-        // The format is: addWidget(widget, row, column, rowSpan, columnSpan)
-        mainGridLayout->addWidget(m_titleBar.get(), 0, 0, 1, 3); // Row 0, Col 0, spans 1 row, 3 columns
-        mainGridLayout->addWidget(m_topPanel.get(), 1, 0, 1, 2); // Row 1, Col 1
-        mainGridLayout->addWidget(middleContentContainer, 2, 0); // Row 2, Col 0
-        mainGridLayout->addWidget(m_bottomPanel.get(), 3, 0); // Row 3, Col 0, spans 1 row, 3 columns
-
-        // Set other rows/columns to have 0 stretch so they don't expand.
-        mainGridLayout->setRowStretch(0, 0);
-        mainGridLayout->setRowStretch(1, 1);
-        mainGridLayout->setColumnStretch(2, 0);
-    }
+    // Status bar
+    const auto bottomPanel = m_Frame->getBottomPanelWidget();
+    m_statusBar = new QStatusBar(bottomPanel);
+    m_statusBar->setObjectName("appStatusBar");
+    m_statusBar->setFixedHeight(25);
+    bottomPanel->layout()->addWidget(m_statusBar);
 
     // Connections
-    connect(m_closeButton.get(), &QPushButton::clicked, this, &FramelessWindow::close);
     connect(m_maximizeButton.get(), &QPushButton::clicked, this, &FramelessWindow::showMaximizeOrRestoreSlot);
     connect(m_minimizeButton.get(), &QPushButton::clicked, this, &FramelessWindow::showMinimized);
     connect(this, &FramelessWindow::closeApp, this, &FramelessWindow::close);
+    connect(this, &FramelessWindow::windowResize, m_Frame.get(), &Frame::windowResizeSlot);
 
     // Create an instance of your settings dialog
     const auto settingsDialog = new SettingsDialog(this);
+    // Connect the button's click signal to open the dialog
     connect(m_settingsButton.get(), &QPushButton::clicked, settingsDialog, &SettingsDialog::exec);
 }
 
@@ -234,6 +121,7 @@ void FramelessWindow::closeWindowSlot()
 
 void FramelessWindow::showMaximizeOrRestoreSlot()
 {
+    emit windowResize(this->size());
     if (this->isMaximized())
     {
         this->showNormal();
@@ -244,14 +132,15 @@ void FramelessWindow::showMaximizeOrRestoreSlot()
         this->showMaximized();
         m_maximizeButton->setText("❐"); // Actual maximize symbol (might need specific font or icon)
     }
+    m_Frame->setMinimumSize(this->size());
 }
 
-void FramelessWindow::initContentAreaLayout()
+void FramelessWindow::initContentAreaLayout(QWidget* mainContentArea)
 {
     m_drawer = std::make_unique<CustomDrawer>(m_editor.get());
 
-    const auto contentArea = new QWidget(m_centralWidget.get());
-    m_mainLayout->addWidget(contentArea);
+    const auto contentArea = new QWidget(mainContentArea);
+    mainContentArea->layout()->addWidget(contentArea);
 
     // 1. MAIN LAYOUT: A horizontal layout to separate the left controls from the main content.
     QHBoxLayout* mainLayout = new QHBoxLayout(contentArea);
@@ -259,6 +148,7 @@ void FramelessWindow::initContentAreaLayout()
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
     // 2. LEFT CONTROL PANEL: A vertical layout for the top and bottom buttons.
+    const auto leftPanelLayout = m_Frame->getLeftSidePanelLayout();
 
     m_folderButton = std::make_unique<QPushButton>("🗀", contentArea);
     m_folderButton->setIconSize(QSize(32, 32));
@@ -271,9 +161,9 @@ void FramelessWindow::initContentAreaLayout()
 
     connect(m_outputButton.get(), &QPushButton::clicked, this, &FramelessWindow::onShowOutputButtonClicked);
 
-    m_leftSidePanelLayout->addWidget(m_folderButton.get()); // Add button to the top
-    m_leftSidePanelLayout->addStretch(); // Pushes buttons to top and bottom
-    m_leftSidePanelLayout->addWidget(m_outputButton.get()); // Add button to the bottom
+    leftPanelLayout->addWidget(m_folderButton.get()); // Add button to the top
+    leftPanelLayout->addStretch(); // Pushes buttons to top and bottom
+    leftPanelLayout->addWidget(m_outputButton.get()); // Add button to the bottom
 
     // 3a. Top Area (Editor + Drawer)
     QWidget* topAreaWidget = new QWidget();
@@ -432,6 +322,7 @@ void FramelessWindow::mouseMoveEvent(QMouseEvent* event)
 
         setGeometry(newGeometry);
         m_dragPosition = currentPos;
+        emit windowResize(this->size());
     }
     else if (m_dragging)
     {
