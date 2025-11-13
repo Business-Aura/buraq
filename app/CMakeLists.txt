@@ -108,6 +108,8 @@ set(ITOOLS_HEADERS
         ui/DraggableWidget/DraggableWidget.h
         utils/Frame/Frame.cpp
         utils/Frame/Frame.h
+        ui/frameless_window/MainWindow.cpp
+        ui/frameless_window/MainWindow.h
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release" AND WIN32)

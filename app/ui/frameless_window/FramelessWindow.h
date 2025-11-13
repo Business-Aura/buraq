@@ -33,16 +33,15 @@ class ToolBar;
 class ThemeManager;
 class Frame;
 
-class FramelessWindow final : public QMainWindow
+class FramelessWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit FramelessWindow(QWidget* parent = nullptr);
+    explicit FramelessWindow(QWidget* parent);
     ~FramelessWindow() override;
 
     [[nodiscard]] Editor* getEditor() const;
-    void onShowOutputButtonClicked() const;
     [[nodiscard]] PluginManager* getLangPluginManager() const;;
 
     void mousePressEvent(QMouseEvent* event) override;
@@ -51,10 +50,12 @@ public:
 
 public slots:
     void processStatusSlot(const QString&, int timeout = 5000) const;
-    void processResultSlot(int exitCode, const QString& output, const QString& error) const;
-    void updateDrawer() const;
     void closeWindowSlot();
     void showMaximizeOrRestoreSlot();
+
+protected:
+    std::unique_ptr<Frame> m_Frame;
+    QStatusBar* m_statusBar{};
 
 private:
     // Helper function to update the cursor shape based on position
@@ -63,23 +64,17 @@ private:
     // Helper function to calculate which edges the mouse is on
     [[nodiscard]] Qt::Edges calculateEdges(const QPoint& pos, int margin) const;
 
-    void initContentAreaLayout(QWidget* contentArea);
+    void initContentAreaLayout(QWidget* mainContentArea);
 
     ThemeManager& themeManager;
 
     std::unique_ptr<PluginManager> pluginManager;
-    std::unique_ptr<CustomDrawer> m_drawer;
     std::unique_ptr<QGridLayout> m_centralWidgetLayout;
-    std::unique_ptr<OutputDisplay> m_outPutArea;
     std::unique_ptr<QGridLayout> m_placeHolderLayout;
-    std::unique_ptr<Editor> m_editor;
     std::unique_ptr<ToolBar> m_toolBar;
     std::unique_ptr<buraq::buraq_api> api_context;
-    std::unique_ptr<Frame> m_Frame;
 
     // buttons
-    std::unique_ptr<QPushButton> m_folderButton;
-    std::unique_ptr<QPushButton> m_outputButton;
     std::unique_ptr<QPushButton> m_settingsButton;
     std::unique_ptr<QPushButton> m_minimizeButton;
     std::unique_ptr<QPushButton> m_maximizeButton;
@@ -89,7 +84,6 @@ private:
      std::unique_ptr<QSplitter> rightSideSplitter;
      std::unique_ptr<QSplitter> topAreaSplitter;
 
-    QStatusBar* m_statusBar{};
     UserSettings userPreferences;
 
     bool m_resizing = false;

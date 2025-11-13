@@ -47,10 +47,11 @@
 #include "clients/VersionClient/VersionRepository.h"
 #include "database/db_conn.h"
 #include "dialog/VersionUpdateDialog.h"
-#include "frameless_window/FramelessWindow.h"
+#include "frameless_window/MainWindow.h"
 #include "ManagedProcess/ManagedProcess.h"
 
-AppUi::AppUi(QObject* parent) : QObject(parent)
+AppUi::AppUi(QObject* parent) : QObject(parent),
+                                m_main_window(std::make_unique<MainWindow>(nullptr))
 {
     // Load configuration settings
     Config::singleton();
@@ -109,15 +110,13 @@ AppUi::~AppUi()
 
 void AppUi::showUi() const
 {
-    m_framelessWindow->show();
+    m_main_window->show();
 }
 
 void AppUi::initAppLayout()
 {
-    m_framelessWindow = std::make_unique<FramelessWindow>(nullptr);
-
     // Signals
-    connect(this, &AppUi::updateStatusBar, m_framelessWindow.get(), &FramelessWindow::processStatusSlot);
+    connect(this, &AppUi::updateStatusBar, m_main_window.get(), &FramelessWindow::processStatusSlot);
 }
 
 void AppUi::initAppContext()
@@ -151,16 +150,16 @@ void AppUi::onWindowFullyLoaded()
 
     // initialize Powershell support
     QMetaObject::invokeMethod(m_minion, "addTask", Qt::QueuedConnection,
-       Q_ARG(std::function<QVariant()>, [this]() -> QVariant {
-           qDebug() << "  [Task 1] Initialize Powershell support...";
-           return initPSLangSupport();
-       }));
+                              Q_ARG(std::function<QVariant()>, [this]() -> QVariant {
+                                    qDebug() << "  [Task 1] Initialize Powershell support...";
+                                    return initPSLangSupport();
+                                    }));
 
     QMetaObject::invokeMethod(m_minion, "addTask", Qt::QueuedConnection,
-       Q_ARG(std::function<QVariant()>, [this]() -> QVariant {
-           qDebug() << "  [Task 2] Checking for new Versions...";
-           return verifyApplicationVersion();
-       }));
+                              Q_ARG(std::function<QVariant()>, [this]() -> QVariant {
+                                    qDebug() << "  [Task 2] Checking for new Versions...";
+                                    return verifyApplicationVersion();
+                                    }));
 }
 
 // Call this once in your CodeRunner's constructor.
@@ -217,7 +216,7 @@ QVariant AppUi::verifyApplicationVersion()
             return {};
         }
 
-        VersionUpdateDialog versionUpdater(m_framelessWindow.get());
+        VersionUpdateDialog versionUpdater(m_main_window.get());
         versionUpdater.setWindowTitle(
             "A new version " + QString::fromStdString(update_info.latestVersion) + " is available!");
         versionUpdater.setContent(QString::fromStdString(update_info.releaseNotes));

@@ -18,9 +18,9 @@ class QMouseEvent;
 class QThread;
 class EditorMargin;
 class ManagedProcess;
-class FramelessWindow;
 class PluginManager;
 class ToolBar;
+class MainWindow;
 
 class AppUi final : public QObject
 {
@@ -47,7 +47,7 @@ public:
 private:
     std::unique_ptr<PluginManager> pluginManager;
     std::unique_ptr<buraq::buraq_api> api_context;
-    std::unique_ptr<FramelessWindow> m_framelessWindow;
+    std::unique_ptr<MainWindow> m_main_window;
 
     // For running background services
     ManagedProcess* m_bridgeProcess{};
