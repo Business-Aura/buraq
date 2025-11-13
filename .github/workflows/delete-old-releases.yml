@@ -3,10 +3,15 @@ name: Delete Older Releases
 on:
   schedule:
     - cron: '0 0 * * *' # Runs every day at midnight UTC
+  push:
+    paths: # IMPORTANT: Prevent infinite loop if this workflow's PR is merged
+      - '.github/workflows/delete-old-releases.yml'
 
 jobs:
   delete-older-releases:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Delete older releases
         uses: dev-drprasad/delete-older-releases@v0.3.4

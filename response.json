@@ -1,9 +1,9 @@
 {
-  "url": "https://api.github.com/repos/tkasozi/buraq/releases/237202242",
-  "assets_url": "https://api.github.com/repos/tkasozi/buraq/releases/237202242/assets",
-  "upload_url": "https://uploads.github.com/repos/tkasozi/buraq/releases/237202242/assets{?name,label}",
-  "html_url": "https://github.com/tkasozi/buraq/releases/tag/v0.0.31",
-  "id": 237202242,
+  "url": "https://api.github.com/repos/tkasozi/buraq/releases/243743283",
+  "assets_url": "https://api.github.com/repos/tkasozi/buraq/releases/243743283/assets",
+  "upload_url": "https://uploads.github.com/repos/tkasozi/buraq/releases/243743283/assets{?name,label}",
+  "html_url": "https://github.com/tkasozi/buraq/releases/tag/v0.0.36",
+  "id": 243743283,
   "author": {
     "login": "tkasozi",
     "id": 12478423,
@@ -25,21 +25,22 @@
     "user_view_type": "public",
     "site_admin": false
   },
-  "node_id": "RE_kwDOOng-j84OI2tC",
-  "tag_name": "v0.0.31",
+  "node_id": "RE_kwDOOng-j84Ohzoz",
+  "tag_name": "v0.0.36",
   "target_commitish": "main",
-  "name": "v0.0.31",
+  "name": "v0.0.36",
   "draft": false,
   "immutable": false,
   "prerelease": false,
-  "created_at": "2025-08-04T00:18:15Z",
-  "published_at": "2025-08-04T00:19:03Z",
+  "created_at": "2025-08-31T20:24:12Z",
+  "updated_at": "2025-08-31T20:34:14Z",
+  "published_at": "2025-08-31T20:27:28Z",
   "assets": [
     {
-      "url": "https://api.github.com/repos/tkasozi/buraq/releases/assets/279053940",
-      "id": 279053940,
-      "node_id": "RA_kwDOOng-j84QogZ0",
-      "name": "setup-buraq-windows-latest-v0.0.31.exe",
+      "url": "https://api.github.com/repos/tkasozi/buraq/releases/assets/288185736",
+      "id": 288185736,
+      "node_id": "RA_kwDOOng-j84RLV2I",
+      "name": "setup-buraq-windows-x64-v0.0.36.exe",
       "label": "",
       "uploader": {
         "login": "github-actions[bot]",
@@ -64,15 +65,15 @@
       },
       "content_type": "application/octet-stream",
       "state": "uploaded",
-      "size": 25202101,
-      "digest": "sha256:9d06155054fbd9439dd3e207dcacd39d67738278e391f7913ea9d3e5ba2f35f9",
+      "size": 53472421,
+      "digest": "sha256:f9427ffec4329d9e7c614680f9cd83828f1b7b5371a014abba18e5a31a7646ba",
       "download_count": 0,
-      "created_at": "2025-08-04T00:24:32Z",
-      "updated_at": "2025-08-04T00:24:33Z",
-      "browser_download_url": "https://github.com/tkasozi/buraq/releases/download/v0.0.31/setup-buraq-windows-latest-v0.0.31.exe"
+      "created_at": "2025-08-31T20:34:11Z",
+      "updated_at": "2025-08-31T20:34:14Z",
+      "browser_download_url": "https://github.com/tkasozi/buraq/releases/download/v0.0.36/setup-buraq-windows-x64-v0.0.36.exe"
     }
   ],
-  "tarball_url": "https://api.github.com/repos/tkasozi/buraq/tarball/v0.0.31",
-  "zipball_url": "https://api.github.com/repos/tkasozi/buraq/zipball/v0.0.31",
-  "body": "## What's Changed\r\n* Enabling debugging"
+  "tarball_url": "https://api.github.com/repos/tkasozi/buraq/tarball/v0.0.36",
+  "zipball_url": "https://api.github.com/repos/tkasozi/buraq/zipball/v0.0.36",
+  "body": "- Adds Settings page\r\n\r\n- Fixes bugs in v0.0.35"
 }
