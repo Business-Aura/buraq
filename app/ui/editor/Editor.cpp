@@ -15,7 +15,7 @@
 
 #include "EditorMargin.h"
 #include "app_ui/AppUi.h"
-#include "frameless_window/FramelessWindow.h"
+#include "frameless_window/MainWindow.h"
 
 #define string_equals(keyText, key) \
 (std::equal(keyText.begin(), keyText.end(), key));
@@ -262,8 +262,8 @@ void Editor::setupSignals()
     connect(this, &Editor::readyToSaveEvent, this, &Editor::autoSave);
 
     // Update status bar in AppUI component
-    const auto appUi_ = dynamic_cast<FramelessWindow*>(m_window);
-    connect(this, &Editor::statusUpdate, appUi_, &FramelessWindow::processStatusSlot);
+    const auto appUi_ = dynamic_cast<MainWindow*>(m_window);
+    connect(this, &Editor::statusUpdate, appUi_, &MainWindow::processStatusSlot);
 
     // Signal to update status bar in AppUI component for the running process
     connect(this, &Editor::lineNumberAreaPaintEventSignal, m_editorMargin.get(), &EditorMargin::updateState);

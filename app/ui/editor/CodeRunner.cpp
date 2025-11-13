@@ -9,7 +9,7 @@
 #include "Editor.h"
 #include "IconButton.h"
 #include "app_ui/AppUi.h"
-#include "frameless_window/FramelessWindow.h"
+#include "frameless_window/MainWindow.h"
 
 CodeRunner::CodeRunner(QWidget* parent)
     : QPushButton("{ }", parent), m_window(parent), m_workerThread(nullptr),
@@ -61,7 +61,7 @@ void CodeRunner::runCode()
     }
 
     // --- Get the script text from the UI in the main thread ---
-    const auto window_ = dynamic_cast<FramelessWindow*>(m_window);
+    const auto window_ = dynamic_cast<MainWindow*>(m_window);
     if (window_ == nullptr || !window_->getEditor())
     {
         return; // Safety check
@@ -147,11 +147,11 @@ void CodeRunner::setupSignals()
     // Signal to execute the code
     connect(this, &IconButton::clicked, this, &CodeRunner::runCode);
 
-    const auto window = dynamic_cast<FramelessWindow*>(m_window);
+    const auto window = dynamic_cast<MainWindow*>(m_window);
     // Signal to update status bar in AppUI component for the running process
-    connect(this, &CodeRunner::statusUpdate, window, &FramelessWindow::processStatusSlot);
+    connect(this, &CodeRunner::statusUpdate, window, &MainWindow::processStatusSlot);
 
     // Signal to update the out component in AppUI component for the completed process
-    connect(this, &CodeRunner::updateOutputResult, window, &FramelessWindow::processResultSlot);
+    connect(this, &CodeRunner::updateOutputResult, window, &MainWindow::processResultSlot);
     connect(this, &CodeRunner::statusUpdate, m_psClient, &PSClient::connected);
 }

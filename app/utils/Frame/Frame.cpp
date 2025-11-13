@@ -60,7 +60,7 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
         const auto logoAndVersionLayout = new QHBoxLayout(logoAndVersion);
         logoAndVersionLayout->setContentsMargins(0, 0, 0, 0);
 
-        QPushButton* iconButton = new QPushButton(m_titleBar_);
+        const auto iconButton = new QPushButton(m_titleBar_);
         iconButton->setIcon(parent->windowIcon());
         iconButton->setIconSize(QSize(32, 32));
         iconButton->setFixedSize(m_titleBar_->height(), m_titleBar_->height()); // Give some padding around the icon
