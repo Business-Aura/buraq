@@ -7,29 +7,21 @@
 
 #include "ToolBarEvent.h"
 
-#include "Config.h"
-#include "../../app_ui/AppUi.h"
-#include "../../ToolBar.h"
 #include "frameless_window/FramelessWindow.h"
 
-bool ToolBarEvent::eventFilter(QObject* obj, QEvent* event)
+bool ToolBarEvent::eventFilter(QObject* watched, QEvent* event)
 {
-    const auto toolBar = dynamic_cast<ToolBar*>(obj);
-    const auto _event = dynamic_cast<QMouseEvent*>(event);
-
-    if (toolBar == nullptr || event == nullptr)
+    if (const auto toolBar = dynamic_cast<QWidget*>(watched); toolBar == nullptr || event == nullptr)
     {
         return false; // Pass event to the object's normal handlers
     }
 
-    auto* ui = dynamic_cast<FramelessWindow*>(obj->parent());
-    const auto geo = toolBar->geometry();
+    const auto _event = dynamic_cast<QMouseEvent*>(event);
 
     switch (event->type())
     {
     case QEvent::MouseButtonDblClick:
-        // m_toolBar->updateMaxAndRestoreIconButton();
-
+        emit showMaximizedOrRestore();
         return true;
     case QEvent::MouseButtonPress:
 
@@ -43,30 +35,19 @@ bool ToolBarEvent::eventFilter(QObject* obj, QEvent* event)
 
         return false;
     case QEvent::MouseMove:
-        if (isMouseBtnPressed && ui != nullptr)
+
+        if (isMouseBtnPressed)
         {
-            if (ui->width() != Config::singleton().getWindow()->normalSize)
-            {
-                // toolBar->updateMaxAndRestoreIconButton();
-            }
-
-            const auto pos = _event->globalPosition().toPoint();
-
-            const QPoint newPos = toolBar->pos() + pos - dragStartPos;
-
-            ui->setGeometry(newPos.x(), newPos.y(), Config::singleton().getWindow()->normalSize, geo.height());
-
+            emit dragWindow(_event);
             return true;
         }
 
-        return false; // Stop event propagation (optional)
+        // return false; // Stop event propagation (optional)
     case QEvent::MouseButtonRelease:
-
         isMouseBtnPressed = false;
-
         return true;
     default:
-        return QObject::eventFilter(obj, event);
+        return QObject::eventFilter(watched, event);
     }
 }
 

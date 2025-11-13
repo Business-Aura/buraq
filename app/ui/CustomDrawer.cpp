@@ -39,7 +39,8 @@ CustomDrawer::CustomDrawer(Editor* editor) : QWidget(editor), editor(editor)
     setFixedWidth(DrawerMeasurements::width);
     // Consider if setMaximumHeight(500) is truly desired, or if content should dictate height.
     // If content can grow beyond 500, remove this line or make it a maximum.
-    setMaximumHeight(500);
+    // setMaximumHeight(500);
+    setFixedWidth(250);
 
     // 1. Set up the main vertical layout for the CustomDrawer.
     // The QWidget (this) takes ownership of the layout when setLayout() is called.

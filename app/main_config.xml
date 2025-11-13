@@ -3,7 +3,8 @@
     <Title>Buraq</Title>
     <Version>Buraq x.x.x</Version>
     <AppLogo>:/icons/workflow</AppLogo>
-    <window minWidth="800"
+    <window
+        minWidth=""
         minHeight="720"
         normalSize="1200"
         minimizeIcon=":/icons/minimize_icon"

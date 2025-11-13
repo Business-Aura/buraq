@@ -49,7 +49,7 @@ Config& Config::singleton()
 
 void Config::loadConfig(Config* _this)
 {
-    QFile config(":/icons/main_config");
+    QFile config(":/config/main_config");
     if (!config.open(QIODevice::ReadOnly))
     {
         // Add this line to see all available resources at the root.

@@ -15,6 +15,7 @@ class QDialogButtonBox;
 class QListWidget;
 class QStackedWidget;
 class SettingsManager;
+class Frame;
 
 class SettingsDialog final : public QDialog
 {
@@ -33,6 +34,9 @@ private slots:
     void setTheme(const int index);
 
 private:
+    std::unique_ptr<QWidget> m_titleBar;
+    std::unique_ptr<Frame> m_Frame;
+
     SettingsManager* settingsManager;
     UserSettings userPreference;
     ThemeManager &themeManager;

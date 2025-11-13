@@ -28,12 +28,11 @@
 #define OUTPUT_DISPLAY_H
 
 #include <QWidget>
-#include <QGridLayout>
-#include <QLabel>
-#include <QPlainTextEdit>
-#include <QScrollArea>
 
-class OutputDisplay : public QWidget {
+class QLabel;
+class QPlainTextEdit;
+
+class OutputDisplay final : public QWidget {
 Q_OBJECT
 
 public:

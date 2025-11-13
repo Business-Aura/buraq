@@ -1,2 +1,4 @@
 #define IDI_MYICON 101
-IDI_MYICON ICON "../icons/workflow.ico"
+#define IDI_MYICON2 102
+IDI_MYICON ICON "../icons/favicon.ico"
+IDI_MYICON2 ICON "../icons/buraq.ico"

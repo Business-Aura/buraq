@@ -28,22 +28,23 @@
 #include "OutputDisplay.h"
 #include "Utils.h"
 #include "app_ui/AppUi.h"
+#include <QScrollArea>
+#include <QLabel>
+#include <QPlainTextEdit>
+#include <QVBoxLayout>
 
 void init_main_out_area(QPlainTextEdit*, QVBoxLayout*, int);
 
 OutputDisplay::OutputDisplay(QWidget* window) : QWidget(window), m_window(window)
 {
     // TODO This will eventually become a tool bar
-    const auto pMainLabel = new QLabel;
+    const auto pMainLabel = new QLabel(this);
     pMainLabel->setFixedHeight(25);
     pMainLabel->setText("❯_");
 
     const auto layout = new QVBoxLayout(this);
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
-    // pMainLabel->setStyleSheet(
-    //     "color: #fff;"
-    //     "border-bottom: 1px solid #000;");
     layout->addWidget(pMainLabel);
 
     main = std::make_unique<QPlainTextEdit>();
@@ -79,7 +80,7 @@ void init_main_out_area(QPlainTextEdit* main, QVBoxLayout* layout, int editorWid
     // Apply the stylesheet directly to the textEdit widget
     // This ensures only this textEdit's scrollbars are affected (and its children if any)
     main->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAsNeeded);
-    main->setMinimumHeight(550);
+    main->setMinimumHeight(50);
 }
 
 void OutputDisplay::toggle()

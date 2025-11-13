@@ -15,11 +15,24 @@ class ToolBarEvent final : public QObject {
 public:
 	explicit ToolBarEvent(QObject *parent = nullptr);
 	~ToolBarEvent() override;
-	bool eventFilter(QObject *obj, QEvent *event) override;
+
+signals:
+	void showMinimized();
+	void showMaximizedOrRestore();
+	void dragWindow(QMouseEvent* event);
+protected:
+	// This is the method that will be called when an event is filtered.
+	// It's part of the QEventFilter interface.
+	bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
 	QPoint dragStartPos;
 	bool isMouseBtnPressed;
+
+	// bool m_resizing = false;
+	// QPoint m_dragPosition;
+	// Qt::Edges m_resizeEdges;
+	// int m_resizeMargin = 5; // The pixel margin to detect resizing
 };
 
 

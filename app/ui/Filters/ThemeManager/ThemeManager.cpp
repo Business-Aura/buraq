@@ -5,9 +5,9 @@
 ThemeManager::ThemeManager(QObject* parent)
     : QObject(parent)
 {
-    SettingsManager settings{};
+    SettingsManager settingsManager{};
     // retrieve theme from user preference
-    m_currentTheme = settings.loadSettings().theme;
+    m_currentTheme = settingsManager.loadSettings().theme;
 
     // Install THIS ThemeManager instance as an event filter on the QApplication object.
     // This allows its eventFilter() method to intercept events sent to qApp.

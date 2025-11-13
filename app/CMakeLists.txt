@@ -83,6 +83,7 @@ set(ITOOLS_HEADERS
         ui/frameless_window/FramelessWindow.h
         ${CMAKE_SOURCE_DIR}/include/version.h
         app_version.cpp
+        app_version.cpp
         app_version.h
         ${CMAKE_SOURCE_DIR}/include/network.cpp
         ${CMAKE_SOURCE_DIR}/include/network.h
@@ -103,6 +104,10 @@ set(ITOOLS_HEADERS
         ui/settings/UserSettings.h
         ui/settings/SettingManager/SettingsManager.cpp
         ui/settings/SettingManager/SettingsManager.h
+        ui/DraggableWidget/DraggableWidget.cpp
+        ui/DraggableWidget/DraggableWidget.h
+        utils/Frame/Frame.cpp
+        utils/Frame/Frame.h
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release" AND WIN32)
@@ -175,7 +180,7 @@ foreach (DLL_FILENAME ${QT_THIRD_PARTY_DEPENDENCY_DLLS})
 endforeach ()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/icons/workflow.ico "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/icons/buraq.ico "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
 
 set(MANAGED_LIBRARY_PUBLISH_DIR "${CMAKE_SOURCE_DIR}/CSharpManaged/bin/Release/net9.0/win-x64/publish")

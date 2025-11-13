@@ -39,6 +39,7 @@ public:
     // delete their managed objects when AppUi is destroyed.
     // No manual delete, no manual nullptr.
     ~AppUi() override;
+    void showUi() const;
 
     [[nodiscard]] buraq::buraq_api* get_api_context() const { return api_context.get(); };
 

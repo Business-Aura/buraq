@@ -31,7 +31,7 @@ public:
 protected:
     // This is the method that will be called when an event is filtered.
     // It's part of the QEventFilter interface.
-    bool eventFilter(QObject *watched, QEvent *event) override; // NEW: eventFilter override
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     explicit ThemeManager(QObject *parent = nullptr);

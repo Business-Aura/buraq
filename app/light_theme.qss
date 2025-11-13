@@ -31,6 +31,8 @@ QPushButton, QToolButton {
     color: #212121;            /* Dark text */
     border: none;
     border-radius: 4px;
+    padding: 8px 24px;
+    font-size: 10pt;
 }
 QPushButton:hover, QToolButton:hover {
     background-color: rgba(0, 0, 0, 0.05); /* Subtle dark background on hover */
@@ -90,7 +92,8 @@ QPushButton#AddFile,
 QPushButton#minimizeButton,
 QPushButton#fileMenuButton,
 QPushButton#maximizeButton,
-QPushButton#closeButton {
+QPushButton#closeButton,
+QPushButton#settingGearButton  {
         font-size: 12pt;
         border-radius: 0px;
         color: #212121; /* Dark text */
@@ -105,17 +108,22 @@ QPushButton#closeButton:pressed {
         background-color: #C2402B; /* An even darker red for the click */
         color: #FFFFFF; /* White text on press for close button */
 }
+
+QPushButton#settingGearButton {
+  font-size: 18pt;
+  font-weight: 900;
+}
 /*--- END of Max, Min, Close Buttons*/
 
 
-QToolButton#CodeRunner  {
-    font-size: 10pt;
+QPushButton#CodeRunner  {
     background-color: transparent;
     border-radius: 0px;
-    color: #212121; /* Dark text */
+    color: #232323;
     border: none;
+    padding: 0px;
 }
-QToolButton#CodeRunner:hover {
+QPushButton#CodeRunner:hover {
     background-color: transparent;
 }
 

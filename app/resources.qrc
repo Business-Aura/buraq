@@ -32,8 +32,9 @@
         <file>light_theme.qss</file>
     </qresource>
     <qresource prefix="/icons">
-        <file alias="main_config">main_config.xml</file>
         <file alias="index.theme">icons/dark/index.theme</file>
+        <file alias="buraq.ico">icons/buraq.ico</file>
+        <file alias="favicon.ico">icons/favicon.ico</file>
         <file alias="close_icon">icons/dark/png/close_icon.png</file>
         <file alias="home">icons/dark/png/home.png</file>
         <file alias="maximize_icon">icons/dark/png/maximize_icon.png</file>

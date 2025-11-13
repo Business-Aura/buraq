@@ -224,7 +224,7 @@ jobs:
           $appOutputBaseFilename = "setup-${{ env.APP_EXE_NAME }}"
           
           & "$innoSetupExe" "$innoScriptPath" `
-            "/DAppName=$appName" `
+            "/DAppName=Buraq" `
             "/DAppExeName=$appExeName" `
             "/DAppVersion=$appVersion" `
             "/DOutputDir=$outputDirForInno" `

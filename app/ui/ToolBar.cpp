@@ -22,6 +22,8 @@ ToolBar::ToolBar(const QString& title, QWidget* parent)
 
     setContextMenuPolicy(Qt::PreventContextMenu);
     setIconSize(QSize(24, 24));
+    setObjectName("test");
+
 
     qDebug() << "Custom ToolBar created with title:" << title;
 }

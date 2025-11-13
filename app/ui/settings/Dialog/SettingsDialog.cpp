@@ -18,40 +18,58 @@
 #include <qsettings.h>
 
 #include "Config.h"
+#include "Filters/Toolbar/ToolBarEvent.h"
+#include "Frame/Frame.h"
 #include "settings/SettingManager/SettingsManager.h"
 #include "settings/UserSettings.h"
 
-SettingsDialog::SettingsDialog(QWidget *parent)
-    : QDialog(parent), settingsManager(new SettingsManager()), themeManager(ThemeManager::instance())
+SettingsDialog::SettingsDialog(QWidget* parent)
+    : QDialog(parent),
+      m_titleBar(std::make_unique<QWidget>(this)),
+      m_Frame(std::make_unique<Frame>(this)),
+      settingsManager(new SettingsManager()),
+      themeManager(ThemeManager::instance())
 {
-    userPreference = settingsManager->loadSettings();
     setWindowTitle("Settings");
+    // Set the m_window flag to remove the default frame
+    this->setWindowFlags(Qt::FramelessWindowHint);
+    // allow the m_window to be transparent if you have rounded corners.
+    this->setAttribute(Qt::WA_TranslucentBackground);
 
-    // --- Main Tab Widget ---
-    m_tabWidget = new QTabWidget(this);
-    m_tabWidget->addTab(createAppearancePage(), "Appearance");
-    m_tabWidget->addTab(createEditorPage(), "Editor");
-    m_tabWidget->addTab(createAccountPage(), "Account");
+    // Load user preferences
+    userPreference = settingsManager->loadSettings();
 
-    // --- Bottom Button Box (OK, Cancel, Apply) ---
-    m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply, this);
-    m_buttonBox->button(QDialogButtonBox::Ok)->setObjectName("OkButtonBox");
-    m_buttonBox->button(QDialogButtonBox::Apply)->setObjectName("ApplyButtonBox");
-    m_buttonBox->button(QDialogButtonBox::Cancel)->setObjectName("CancelButtonBox");
+    // Create a central widget to hold the main layout.
+    // QMainWindow requires a central widget to manage content.
+    if (const auto mainLayout = m_Frame->getMainLayout(); mainLayout)
+    {
+        // --- Main Tab Widget ---
+        m_tabWidget = new QTabWidget(this);
+        m_tabWidget->addTab(createAppearancePage(), "Appearance");
+        m_tabWidget->addTab(createEditorPage(), "Editor");
+        m_tabWidget->addTab(createAccountPage(), "Account");
 
-    connect(m_buttonBox, &QDialogButtonBox::accepted, this, &SettingsDialog::accept);
-    connect(m_buttonBox, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
-    connect(m_buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, &SettingsDialog::applyChanges);
+        // --- Bottom Button Box (OK, Cancel, Apply) ---
+        m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply,
+                                           this);
+        m_buttonBox->button(QDialogButtonBox::Ok)->setObjectName("OkButtonBox");
+        m_buttonBox->button(QDialogButtonBox::Apply)->setObjectName("ApplyButtonBox");
+        m_buttonBox->button(QDialogButtonBox::Cancel)->setObjectName("CancelButtonBox");
 
-    // --- Main Layout ---
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(m_tabWidget);
-    mainLayout->addWidget(m_buttonBox);
-    setLayout(mainLayout);
+        connect(m_buttonBox, &QDialogButtonBox::accepted, this, &SettingsDialog::accept);
+        connect(m_buttonBox, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
+        connect(m_buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, this,
+                &SettingsDialog::applyChanges);
+
+        // --- Main Layout ---
+        mainLayout->addWidget(m_tabWidget);
+        mainLayout->addWidget(m_buttonBox);
+    }
 
     const auto windowConfig = Config::singleton().getWindow();
     // Set an initial size
-    this->resize(windowConfig->normalSize, windowConfig->minHeight);
+    resize(windowConfig->normalSize, windowConfig->minHeight);
+    hide();
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -66,7 +84,8 @@ void SettingsDialog::applyChanges() const
 
 void SettingsDialog::setTheme(const int index)
 {
-    if(index >= 0 && index < 3) {
+    if (index >= 0 && index < 3)
+    {
         qDebug() << "ThemeManager::loadSettings index = " << index;
         userPreference.theme = static_cast<AppTheme>(index);
     }
@@ -74,14 +93,14 @@ void SettingsDialog::setTheme(const int index)
 
 QWidget* SettingsDialog::createAppearancePage()
 {
-    QWidget *pageWidget = new QWidget(this);
-    QFormLayout *layout = new QFormLayout(pageWidget);
+    QWidget* pageWidget = new QWidget(this);
+    QFormLayout* layout = new QFormLayout(pageWidget);
 
     // --- Theme Selection ---
-    QGroupBox *themeGroup = new QGroupBox("Theme", this);
-    QFormLayout *themeLayout = new QFormLayout(themeGroup);
+    QGroupBox* themeGroup = new QGroupBox("Theme", this);
+    QFormLayout* themeLayout = new QFormLayout(themeGroup);
 
-    QComboBox *themeComboBox = new QComboBox(this);
+    QComboBox* themeComboBox = new QComboBox(this);
     themeComboBox->setObjectName("themeComboBox"); // For retrieving the value later
     themeComboBox->addItems({"Light", "Dark", "System Default"});
     themeLayout->addRow(new QLabel("Application Theme:", this), themeComboBox);
@@ -92,12 +111,12 @@ QWidget* SettingsDialog::createAppearancePage()
     layout->addWidget(themeGroup);
 
     // --- Font Selection ---
-    QGroupBox *fontGroup = new QGroupBox("Typography", this);
-    QFormLayout *fontLayout = new QFormLayout(fontGroup);
+    QGroupBox* fontGroup = new QGroupBox("Typography", this);
+    QFormLayout* fontLayout = new QFormLayout(fontGroup);
 
-    QComboBox *fontComboBox = new QComboBox(this);
+    QComboBox* fontComboBox = new QComboBox(this);
     fontComboBox->addItems({"Segoe UI", "Roboto", "Helvetica"});
-    QSpinBox *fontSizeSpinBox = new QSpinBox(this);
+    QSpinBox* fontSizeSpinBox = new QSpinBox(this);
     fontSizeSpinBox->setRange(8, 20);
     fontSizeSpinBox->setValue(10);
     fontSizeSpinBox->setSuffix(" pt");
@@ -113,20 +132,20 @@ QWidget* SettingsDialog::createAppearancePage()
 
 QWidget* SettingsDialog::createEditorPage()
 {
-    QWidget *pageWidget = new QWidget(this);
-    QFormLayout *layout = new QFormLayout(pageWidget);
+    QWidget* pageWidget = new QWidget(this);
+    QFormLayout* layout = new QFormLayout(pageWidget);
     layout->setSpacing(15);
 
-    QSpinBox *tabSizeSpinBox = new QSpinBox(this);
+    QSpinBox* tabSizeSpinBox = new QSpinBox(this);
     tabSizeSpinBox->setValue(4);
 
-    QCheckBox *wordWrapCheckBox = new QCheckBox("Enable word wrap", this);
+    QCheckBox* wordWrapCheckBox = new QCheckBox("Enable word wrap", this);
     wordWrapCheckBox->setChecked(true);
 
-    QCheckBox *autoIndentCheckBox = new QCheckBox("Enable auto-indentation", this);
+    QCheckBox* autoIndentCheckBox = new QCheckBox("Enable auto-indentation", this);
     autoIndentCheckBox->setChecked(true);
 
-    QCheckBox *showLineNumbersCheckBox = new QCheckBox("Show line numbers", this);
+    QCheckBox* showLineNumbersCheckBox = new QCheckBox("Show line numbers", this);
     showLineNumbersCheckBox->setChecked(true);
 
     layout->addRow("Tab Size:", tabSizeSpinBox);
@@ -140,15 +159,15 @@ QWidget* SettingsDialog::createEditorPage()
 
 QWidget* SettingsDialog::createAccountPage()
 {
-    QWidget *pageWidget = new QWidget(this);
-    QFormLayout *layout = new QFormLayout(pageWidget);
+    QWidget* pageWidget = new QWidget(this);
+    QFormLayout* layout = new QFormLayout(pageWidget);
 
-    QLineEdit *apiKeyLineEdit = new QLineEdit(this);
+    QLineEdit* apiKeyLineEdit = new QLineEdit(this);
     apiKeyLineEdit->setDisabled(true);
     apiKeyLineEdit->setPlaceholderText("Enter your API key");
     apiKeyLineEdit->setEchoMode(QLineEdit::Password);
 
-    QPushButton *loginButton = new QPushButton("Connect Account", this);
+    QPushButton* loginButton = new QPushButton("Connect Account", this);
 
     layout->addRow("API Key:", apiKeyLineEdit);
     layout->addRow("", loginButton);

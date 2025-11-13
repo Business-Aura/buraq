@@ -90,10 +90,14 @@ AppUi::~AppUi()
     delete m_bridgeProcess;
 }
 
+void AppUi::showUi() const
+{
+    m_framelessWindow->show();
+}
+
 void AppUi::initAppLayout()
 {
     m_framelessWindow = std::make_unique<FramelessWindow>(nullptr);
-    m_framelessWindow->show();
 
     // Signals
     connect(this, &AppUi::updateStatusBar, m_framelessWindow.get(), &FramelessWindow::processStatusSlot);

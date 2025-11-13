@@ -8,11 +8,24 @@
  */
 
 /* General Application Colors & Typography */
-QMainWindow, QWidget, QDialog {
-    background-color: #232323; /* Dark background */
+QWidget, QDialog {
+    background-color: transparent;
     color: #E0E0E0;            /* Light text */
     font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
     font-size: 10pt;
+}
+
+QWidget#Frame {
+  background-color: #232323; /* Dark background */
+  border: 1px solid #00BCD4;
+}
+
+QWidget#leftPanel {
+  background-color: #333333; /* Dark background */
+}
+
+QWidget#rightPanel {
+  background-color: #333333; /* Dark background */
 }
 
 /* Selection Colors (for text, list items, etc.) */
@@ -31,6 +44,8 @@ QPushButton, QToolButton {
     color: #FFFFFF;            /* White text */
     border: none;              /* Flat design */
     border-radius: 4px;
+    padding: 8px 24px;
+    font-size: 10pt;
 }
 QPushButton:hover, QToolButton:hover {
     background-color: rgba(255, 255, 255, 0.08); /* FIX: Subtle background on hover */
@@ -90,7 +105,8 @@ QPushButton#AddFile,
 QPushButton#minimizeButton,
 QPushButton#fileMenuButton,
 QPushButton#maximizeButton,
-QPushButton#closeButton {
+QPushButton#closeButton,
+QPushButton#settingGearButton {
         font-size: 12pt;
         border-radius: 0px;
         color: #FFFFFF;
@@ -103,28 +119,33 @@ QPushButton#closeButton:hover {
 QPushButton#closeButton:pressed {
         background-color: #C2402B; /* An even darker red for the click */
 }
+
+QPushButton#settingGearButton {
+  font-size: 18pt;
+  font-weight: 900;
+}
 /*--- END of Max, Min, Close Buttons*/
 
 
-QToolButton#CodeRunner  {
-    font-size: 10pt;
+QPushButton#CodeRunner  {
     background-color: transparent;
     border-radius: 0px;
     color: #FFFFFF;
     border: none;
+    padding: 0px;
 }
-QToolButton#CodeRunner:hover {
+QPushButton#CodeRunner:hover {
     background-color: transparent;
 }
 
 /* Labels */
-QLabel {
+QLabel#HeaderLabel {
     color: #E0E0E0; /* Default text color for labels */
     /* font-weight: normal; */
     /* font-size: 9pt; */
     padding: 2px;
 }
-QLabel:hover { /* NEW: Hover effect for QLabel */
+QLabel#HeaderLabel:hover { /* NEW: Hover effect for QLabel */
     background-color: rgba(255, 255, 255, 0.05); /* Subtle background on hover */
     border-radius: 2px; /* Slight rounding on hover */
 }

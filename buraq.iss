@@ -14,7 +14,7 @@
 #endif 
 
 #ifndef AppBinaryDir
-#define AppBinaryDir "./cmake-build-release/build"
+#define AppBinaryDir "./cmake-build-debug-mingw/build"
 #endif
 
 #ifndef AppOutputBaseFilename
@@ -49,7 +49,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 PrivilegesRequired=lowest
 OutputBaseFilename={#AppOutputBaseFilename}
-SetupIconFile="app\icons\workflow.ico"
+SetupIconFile="app\icons\buraq.ico"
 SolidCompression=yes
 WizardStyle=modern
 
@@ -67,7 +67,7 @@ Source: "{#AppBinaryDir}\*.*"; DestDir: "{app}"; Flags: recursesubdirs createall
 [Registry]
 
 [Icons]
-Name: "{autoprograms}\{#AppName}"; Filename: "{app}\workflow.ico"
+Name: "{autoprograms}\{#AppName}"; Filename: "{app}\buraq.ico"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
 
 [Run]
