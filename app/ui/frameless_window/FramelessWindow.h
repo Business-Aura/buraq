@@ -52,6 +52,7 @@ public slots:
     void processStatusSlot(const QString&, int timeout = 5000) const;
     void closeWindowSlot();
     void showMaximizeOrRestoreSlot();
+    void handleDragWindow(QMouseEvent* event);
 
 protected:
     std::unique_ptr<Frame> m_Frame;

@@ -35,6 +35,8 @@ set(ITOOLS_UI_SOURCES
         ui/Filters/Toolbar/ToolBarEvent.cpp
         ui/ToolBar.cpp
         ui/editor/Editor.cpp
+        ui/editor/PowerShellHighlighter.cpp
+        ui/editor/CppHighlighter.cpp
         ui/CustomDrawer.cpp
         ui/output_display/OutputDisplay.cpp
         ui/CustomLabel.cpp

@@ -10,8 +10,11 @@
 #include <QProcess>
 
 #include "Editor.h"
+#include "PowerShellHighlighter.h"
+#include "CppHighlighter.h"
 
 #include <qscrollbar.h>
+#include <QFileInfo>
 
 #include "EditorMargin.h"
 #include "app_ui/AppUi.h"
@@ -57,6 +60,8 @@ Editor::Editor(QWidget* window)
     // 2. Create the EditorMargin instance.
     // Parent it to 'this' (Editor).
     m_editorMargin = std::make_unique<EditorMargin>(window, this);
+
+    m_highlighter = std::make_unique<buraq::PowerShellHighlighter>();
 
     // FIX: Set the editor for the margin so it can synchronize
     m_editorMargin->setEditor(m_plainTextEdit.get());
@@ -229,6 +234,18 @@ void Editor::openAndParseFile(const QString& filePath, QFile::OpenModeFlag modeF
         this->m_currentFile = filePath;
     }
 
+    QFileInfo fileInfo(filePath);
+    QString extension = fileInfo.suffix().toLower();
+
+    if (extension == "cpp" || extension == "h" || extension == "hpp" || extension == "c" || extension == "cc")
+    {
+        m_highlighter = std::make_unique<buraq::CppHighlighter>();
+    }
+    else
+    {
+        m_highlighter = std::make_unique<buraq::PowerShellHighlighter>();
+    }
+
     try
     {
         QFile file(filePath);
@@ -351,7 +368,7 @@ void Editor::inlineSyntaxHighlighting()
     nextCursor.select(QTextCursor::SelectionType::LineUnderCursor);
 
     QString text = blockToReplace.text();
-    const QString html = convertTextToHtml(text);
+    const QString html = m_highlighter->highlight(text);
 
     nextCursor.insertHtml(
         "<pre>" +
@@ -374,7 +391,7 @@ void Editor::documentSyntaxHighlighting()
         for (auto line : plainText.split("\n"))
         {
             // Process the line here
-            html.append(convertTextToHtml(line));
+            html.append(m_highlighter->highlight(line));
         }
         // closing tags for HTML string
         html.append("</pre>");
