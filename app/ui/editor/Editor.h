@@ -14,6 +14,7 @@
 
 #include "EditorMargin.h"
 #include "buraq.h"
+#include "Highlighter.h"
 
 class Editor final : public QWidget
 {
@@ -68,6 +69,7 @@ private:
     QString m_previousText;
     QTimer m_autoSaveTimer;
     buraq::EditorState m_state;
+    std::unique_ptr<buraq::Highlighter> m_highlighter;
 
     static QString convertTextToHtml(QString&);
     static QString convertRhsTextToHtml(const QString&);

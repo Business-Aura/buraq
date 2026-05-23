@@ -50,6 +50,12 @@ FramelessWindow::FramelessWindow(QWidget* parent)
 
     // Custom Title Bar
     const auto m_titleBar_ = m_Frame->getTitleBar();
+    const auto toolBarEvent = new ToolBarEvent(this);
+    m_titleBar_->installEventFilter(toolBarEvent);
+
+    connect(toolBarEvent, &ToolBarEvent::dragWindow, this, &FramelessWindow::handleDragWindow);
+    connect(toolBarEvent, &ToolBarEvent::showMaximizedOrRestore, this, &FramelessWindow::showMaximizeOrRestoreSlot);
+    connect(toolBarEvent, &ToolBarEvent::showMinimized, this, &FramelessWindow::showMinimized);
 
     m_minimizeButton = std::make_unique<QPushButton>("—", m_titleBar_); // Underscore for minimize
     m_minimizeButton->setObjectName("minimizeButton"); // For specific styling
@@ -135,6 +141,15 @@ void FramelessWindow::processStatusSlot(const QString& message, const int timeou
     if (m_statusBar)
     {
         m_statusBar->showMessage(message, timeout);
+    }
+}
+
+void FramelessWindow::handleDragWindow(QMouseEvent* event)
+{
+    if (event->buttons() & Qt::LeftButton)
+    {
+        move(event->globalPosition().toPoint() - m_dragPosition);
+        event->accept();
     }
 }
 
