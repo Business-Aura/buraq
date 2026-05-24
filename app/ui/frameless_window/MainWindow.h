@@ -20,6 +20,9 @@ public slots:
     void processResultSlot(int exitCode, const QString& output, const QString& error) const;
     void processStatusSlot(const QString&, int timeout = 5000) const;
     void updateDrawer() const;
+    void onNewFileTriggered();
+    void onOpenFileTriggered();
+    void onSaveFileTriggered();
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -27,6 +30,9 @@ public:
 
     [[nodiscard]] Editor* getEditor() const;
     void onShowOutputButtonClicked() const;
+
+protected:
+    bool maybeSave() override;
 
 private:
     std::unique_ptr<OutputDisplay> m_outPutArea;

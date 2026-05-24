@@ -6,6 +6,9 @@
 #include <QVBoxLayout>
 #include <QSplitter>
 
+#include <QMessageBox>
+#include "editor/Editor.h"
+#include "ToolBar.h"
 #include "MainWindow.h"
 #include "CustomDrawer.h"
 #include "Frame/Frame.h"
@@ -73,9 +76,64 @@ MainWindow::MainWindow(QWidget* parent) : FramelessWindow(parent),
 
     // 7. ASSEMBLE THE MAIN LAYOUT
     mainLayout->addWidget(rightSideSplitter.get(), 1); // The '1' stretch factor allows it to expand
+
+    // 8. Connect ToolBar signals
+    if (m_toolBar)
+    {
+        connect(m_toolBar.get(), &ToolBar::newFileTriggered, this, &MainWindow::onNewFileTriggered);
+        connect(m_toolBar.get(), &ToolBar::openFileTriggered, this, &MainWindow::onOpenFileTriggered);
+        connect(m_toolBar.get(), &ToolBar::saveFileTriggered, this, &MainWindow::onSaveFileTriggered);
+    }
 }
 
 MainWindow::~MainWindow() = default;
+
+bool MainWindow::maybeSave()
+{
+    if (!m_editor || !m_editor->isDirty()) return true;
+
+    const QMessageBox::StandardButton ret = QMessageBox::warning(this, "Buraq Editor",
+                                "The document has been modified.\nDo you want to save your changes?",
+                                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+    if (ret == QMessageBox::Save)
+    {
+        m_editor->saveFile();
+        return true;
+    }
+
+    if (ret == QMessageBox::Cancel)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+void MainWindow::onNewFileTriggered()
+{
+    if (m_editor)
+    {
+        m_editor->clear();
+        processStatusSlot("New file created.");
+    }
+}
+
+void MainWindow::onOpenFileTriggered()
+{
+    if (m_drawer)
+    {
+        m_drawer->onAddButtonClicked();
+    }
+}
+
+void MainWindow::onSaveFileTriggered()
+{
+    if (m_editor)
+    {
+        m_editor->saveFile();
+    }
+}
 
 void MainWindow::processResultSlot(const int exitCode, const QString& output, const QString& error) const
 {

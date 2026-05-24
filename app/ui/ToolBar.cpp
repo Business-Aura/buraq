@@ -99,28 +99,24 @@ void ToolBar::addFileMenu()
 void ToolBar::onNewFile()
 {
     qDebug() << "New File action triggered!";
-    QMessageBox::information(this, "File Action", "New File selected!");
     emit newFileTriggered();
 }
 
 void ToolBar::onOpenFile()
 {
     qDebug() << "Open File action triggered!";
-    QMessageBox::information(this, "File Action", "Open File selected!");
     emit openFileTriggered();
 }
 
 void ToolBar::onSaveFile()
 {
     qDebug() << "Save File action triggered!";
-    QMessageBox::information(this, "File Action", "Save File selected!");
     emit saveFileTriggered();
 }
 
 void ToolBar::onExit()
 {
     qDebug() << "Exit action triggered!";
-    QMessageBox::information(this, "File Action", "Exit selected! (Application would typically quit)");
     emit exitTriggered();
 }
 

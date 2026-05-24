@@ -151,7 +151,7 @@ void CustomDrawer::createFileLabel(
     connect(label, &FilePathLabel::clicked, this, &CustomDrawer::onFileLabelClick);
 
     const auto mainVLayout = qobject_cast<QVBoxLayout*>(layout());
-    mainVLayout->addWidget(label);
+    mainVLayout->insertWidget(2, label);
 
     if (!filePath.isEmpty())
     {

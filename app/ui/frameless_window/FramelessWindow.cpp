@@ -117,7 +117,10 @@ FramelessWindow::~FramelessWindow()
 
 void FramelessWindow::closeWindowSlot()
 {
-    emit closeApp();
+    if (maybeSave())
+    {
+        emit closeApp();
+    }
 }
 
 void FramelessWindow::showMaximizeOrRestoreSlot()

@@ -49,7 +49,21 @@ public:
     // Add forwarding methods if external code calls QPlainTextEdit methods on Editor
     [[nodiscard]] QString toPlainText() const { return m_plainTextEdit->toPlainText(); }
     [[nodiscard]] QString selectedText() const { return m_plainTextEdit->textCursor().selectedText(); }
-    void setPlainText(const QString& text) const { m_plainTextEdit->setPlainText(text); }
+    void setPlainText(const QString& text) {
+        m_plainTextEdit->setPlainText(text);
+        m_isDirty = false;
+    }
+    void clear() {
+        m_plainTextEdit->clear();
+        m_currentFile.clear();
+        m_isDirty = false;
+    }
+
+    [[nodiscard]] bool isDirty() const { return m_isDirty; }
+
+    void saveFile();
+
+    void autoSave();
 
 private slots:
     void highlightCurrentLine();
@@ -57,8 +71,6 @@ private slots:
     void documentSyntaxHighlighting();
 
     void inlineSyntaxHighlighting();
-
-    void autoSave();
 
 private:
     std::unique_ptr<QPlainTextEdit> m_plainTextEdit; // FIX: Internal QPlainTextEdit
@@ -70,6 +82,7 @@ private:
     QTimer m_autoSaveTimer;
     buraq::EditorState m_state;
     std::unique_ptr<buraq::Highlighter> m_highlighter;
+    bool m_isDirty = false;
 
     static QString convertTextToHtml(QString&);
     static QString convertRhsTextToHtml(const QString&);

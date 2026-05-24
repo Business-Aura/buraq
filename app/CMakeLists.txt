@@ -69,6 +69,9 @@ set(ITOOLS_HEADERS
         ui/ToolBar.h
         ui/IconButton.h
         ui/editor/Editor.h
+        ui/editor/Highlighter.h
+        ui/editor/PowerShellHighlighter.h
+        ui/editor/CppHighlighter.h
         ui/EditorMargin.h
         ui/CustomDrawer.h
         ui/FilePathLabel.h

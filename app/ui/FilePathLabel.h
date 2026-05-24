@@ -7,6 +7,7 @@
 
 #include <QLabel>
 #include <QMouseEvent>
+#include <QStyle>
 #include <utility>
 #include "CustomDrawer.h"
 #include "CustomLabel.h"
@@ -19,11 +20,13 @@ public slots:
     void activeLabel()
     {
         isActive = true;
+        setStyleSheet("background-color: #3e3e42; color: white; padding: 5px; border-radius: 3px;");
     }
 
     void reset()
     {
         isActive = false;
+        setStyleSheet("background-color: transparent; color: #cccccc; padding: 5px;");
     }
 
 public:
@@ -31,6 +34,8 @@ public:
         : CustomLabel(parent), isActive(false), filePath(std::move(filePath))
     {
         setMouseTracking(true);
+        reset();
+        setMinimumHeight(30);
     }
 
     ~FilePathLabel() override = default;

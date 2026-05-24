@@ -55,23 +55,9 @@ public slots:
     void handleDragWindow(QMouseEvent* event);
 
 protected:
+    virtual bool maybeSave() { return true; }
     std::unique_ptr<Frame> m_Frame;
     QStatusBar* m_statusBar{};
-
-private:
-    // Helper function to update the cursor shape based on position
-    void updateCursorShape(const QPoint& pos);
-
-    // Helper function to calculate which edges the mouse is on
-    [[nodiscard]] Qt::Edges calculateEdges(const QPoint& pos, int margin) const;
-
-    void initContentAreaLayout(QWidget* mainContentArea);
-
-    ThemeManager& themeManager;
-
-    std::unique_ptr<PluginManager> pluginManager;
-    std::unique_ptr<QGridLayout> m_centralWidgetLayout;
-    std::unique_ptr<QGridLayout> m_placeHolderLayout;
     std::unique_ptr<ToolBar> m_toolBar;
     std::unique_ptr<buraq::buraq_api> api_context;
 
@@ -92,6 +78,21 @@ private:
     Qt::Edges m_resizeEdges;
     int m_resizeMargin = 5; // The pixel margin to detect resizing
     QPoint m_dragPosition; // To store the offset of the mouse click from the m_window's top-left
+
+private:
+    // Helper function to update the cursor shape based on position
+    void updateCursorShape(const QPoint& pos);
+
+    // Helper function to calculate which edges the mouse is on
+    [[nodiscard]] Qt::Edges calculateEdges(const QPoint& pos, int margin) const;
+
+    void initContentAreaLayout(QWidget* mainContentArea);
+
+    ThemeManager& themeManager;
+
+    std::unique_ptr<PluginManager> pluginManager;
+    std::unique_ptr<QGridLayout> m_centralWidgetLayout;
+    std::unique_ptr<QGridLayout> m_placeHolderLayout;
 
 protected:
     void resizeEvent(QResizeEvent *event) override {
