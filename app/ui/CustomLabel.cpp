@@ -6,13 +6,16 @@
 
 CustomLabel::CustomLabel(QWidget *parent): QLabel(parent) {
 	setMouseTracking(true);
+    setCursor(Qt::PointingHandCursor);
 }
 
 bool CustomLabel::event(QEvent *event) {
 	if (event->type() == QEvent::MouseButtonRelease) {
-		// Handle mouse click event here (e.g., emit a custom signal)
-		emit clicked();
-		return true; // Stop event propagation (optional)
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        if (mouseEvent->button() == Qt::LeftButton) {
+		    emit clicked();
+		    return true;
+        }
 	}
 	return QLabel::event(event);
 }

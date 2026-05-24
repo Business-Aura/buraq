@@ -16,9 +16,13 @@
 #include <qscrollbar.h>
 #include <QFileInfo>
 
+#include <QFileInfo>
+#include <QFileDialog>
+
 #include "EditorMargin.h"
 #include "app_ui/AppUi.h"
 #include "frameless_window/MainWindow.h"
+#include "../database/db_conn.h"
 
 #define string_equals(keyText, key) \
 (std::equal(keyText.begin(), keyText.end(), key));
@@ -251,11 +255,13 @@ void Editor::openAndParseFile(const QString& filePath, QFile::OpenModeFlag modeF
         QFile file(filePath);
         file.open(modeFlag);
 
-        QString fileContent = QString::fromLatin1(file.readAll());
+        QString fileContent = QString::fromUtf8(file.readAll());
         file.close(); // close file
 
         // clear editor before using the function to avoid adding to the previous opened file
+        m_plainTextEdit->blockSignals(true);
         setPlainText(fileContent);
+        m_plainTextEdit->blockSignals(false);
 
         // highlight syntax
         emit syntaxtHighlightingEvent();
@@ -270,6 +276,10 @@ void Editor::openAndParseFile(const QString& filePath, QFile::OpenModeFlag modeF
 void Editor::setupSignals()
 {
     connect(m_plainTextEdit.get(), &QPlainTextEdit::cursorPositionChanged, this, &Editor::highlightCurrentLine);
+
+    connect(m_plainTextEdit.get(), &QPlainTextEdit::textChanged, this, [this]() {
+        m_isDirty = true;
+    });
 
     // Enables syntaxHighlighting i.e. showing keywords, comments, variables etc.
     connect(this, &Editor::syntaxtHighlightingEvent, this, &Editor::documentSyntaxHighlighting);
@@ -286,28 +296,37 @@ void Editor::setupSignals()
     connect(this, &Editor::lineNumberAreaPaintEventSignal, m_editorMargin.get(), &EditorMargin::updateState);
 }
 
-void Editor::autoSave()
+void Editor::saveFile()
+{
+    if (m_currentFile.isEmpty())
+    {
+        QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "All Files (*)");
+        if (fileName.isEmpty()) return;
+        m_currentFile = fileName;
+    }
 
+    QFile file(m_currentFile);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        emit statusUpdate(file.errorString());
+        return;
+    }
+
+    QTextStream out(&file);
+    out << toPlainText();
+    file.close();
+
+    m_isDirty = false;
+    emit statusUpdate("File saved: " + m_currentFile, 5000);
+}
+
+void Editor::autoSave()
 {
     // auto save works only if the file had been saved before
     // therefore m_currentFile should have been set
-    if (!m_currentFile.isEmpty())
+    if (!m_currentFile.isEmpty() && m_isDirty)
     {
-        // Open the file for writing
-        QFile file(m_currentFile);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        {
-            emit statusUpdate(file.errorString());
-        }
-
-        // Write data to the file (using QTextStream for text files)
-        QTextStream out(&file);
-        out << toPlainText();
-
-        emit statusUpdate("Auto Saving..", 5000);
-
-        // Close the file (important to flush data to disk)
-        file.close();
+        saveFile();
     }
 }
 

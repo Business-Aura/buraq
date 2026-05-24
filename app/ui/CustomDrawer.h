@@ -44,9 +44,10 @@ Q_OBJECT
 
 	void setActive(QWidget *pLabel);
 
-private slots:
+public slots:
+    void onAddButtonClicked();
 
-	void onAddButtonClicked();
+private slots:
 
 	void onFileLabelClick();
 
