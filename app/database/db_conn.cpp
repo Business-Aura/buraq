@@ -4,6 +4,8 @@
 
 #include <QMessageBox>
 #include <QCoreApplication>
+#include <QStandardPaths>
+#include <QFileInfo>
 #include <filesystem> // Requires C++17. For older C++, use platform-specific directory iteration.
 #include <fstream>
 
@@ -13,74 +15,102 @@
 
 namespace database
 {
-    QVariant insertFile(const QString& filePath, const QString& title)
+    void setWorkspacePath(const QString& folderPath)
     {
         QSqlQuery query;
-        if (!query.prepare(INSERT_FILE_SQL))
+        if (!query.prepare(INSERT_WORKSPACE_SQL))
         {
-            // "Error executing query:" << query.lastError().text();
+            file_utils::file_log("Error preparing setWorkspacePath query: " + query.lastError().text().toStdString());
         }
 
-        query.addBindValue(filePath);
-        query.addBindValue(title);
-        query.exec();
-
-        return query.lastInsertId();
+        query.addBindValue(folderPath);
+        if (!query.exec()) {
+            file_utils::file_log("Error executing setWorkspacePath query: " + query.lastError().text().toStdString());
+        }
     }
 
-    QVariant deleteRow(const QString& filePath)
-    {
-        QSqlQuery query;
-        if (!query.prepare(DELETE_BY_FILE_PATH_SQL))
-        {
-            // "Error executing query:" << query.lastError().text();
-        }
-
-        query.addBindValue(filePath);
-        query.exec();
-
-        return query.lastInsertId();
-    }
-
-    QList<FileObject*> findPreviouslyOpenedFiles()
+    QString getWorkspacePath()
     {
         QSqlQuery query;
 
-        if (!query.exec(SELECT_FILES_SQL))
+        if (!query.exec(SELECT_WORKSPACE_SQL))
         {
-            // qDebug() << "Error executing query:" << query.lastError().text();
+             file_utils::file_log("Error executing getWorkspacePath query: " + query.lastError().text().toStdString());
         }
 
-        QList<FileObject*> files;
-        while (query.next())
+        if (query.next())
         {
-            if (const QString filePath = query.value(1).toString(); std::filesystem::exists(filePath.toStdString()))
+            QString folderPath = query.value(0).toString();
+            if (QFileInfo::exists(folderPath) && QFileInfo(folderPath).isDir())
             {
-                const auto file = new FileObject;
-
-                file->setFilePath(filePath);
-
-                QString title = query.value(2).toString(); // column title
-                file->setFileName(title);
-                files.append(file);
+                return folderPath;
             }
             else
             {
-                // delete row with this file
-                deleteRow(filePath);
+                // Directory doesn't exist anymore, clear it
+                clearWorkspacePath();
             }
         }
 
-        return files;
+        return QString();
+    }
+    
+    void clearWorkspacePath()
+    {
+        QSqlQuery query;
+        if (!query.exec(DELETE_WORKSPACE_SQL))
+        {
+            file_utils::file_log("Error executing clearWorkspacePath query: " + query.lastError().text().toStdString());
+        }
+    }
+
+    void setLastOpenedFilePath(const QString& filePath)
+    {
+        QSqlQuery query;
+        if (!query.prepare(UPDATE_LAST_FILE_SQL))
+        {
+            file_utils::file_log("Error preparing setLastOpenedFilePath query: " + query.lastError().text().toStdString());
+        }
+        query.addBindValue(filePath);
+        if (!query.exec()) {
+            file_utils::file_log("Error executing setLastOpenedFilePath query: " + query.lastError().text().toStdString());
+        }
+    }
+
+    QString getLastOpenedFilePath()
+    {
+        QSqlQuery query;
+        if (!query.exec(SELECT_LAST_FILE_SQL))
+        {
+             file_utils::file_log("Error executing getLastOpenedFilePath query: " + query.lastError().text().toStdString());
+        }
+        if (query.next())
+        {
+            return query.value(0).toString();
+        }
+        return QString();
+    }
+
+    void clearLastOpenedFilePath()
+    {
+        QSqlQuery query;
+        if (!query.exec(CLEAR_LAST_FILE_SQL))
+        {
+            file_utils::file_log("Error executing clearLastOpenedFilePath query: " + query.lastError().text().toStdString());
+        }
     }
 
     QSqlError init_db()
     {
-        if (QSqlQuery query; !query.exec(FILES_SQL))
+        QSqlQuery query;
+        if (!query.exec(WORKSPACE_SQL))
         {
             file_utils::file_log("Error executing query: " + query.lastError().text().toStdString());
             return query.lastError();
         }
+
+        // Schema migration: Add last_file_path column if it doesn't already exist in the existing table
+        query.exec("ALTER TABLE workspace ADD COLUMN last_file_path VARCHAR;");
 
         return {};
     }
@@ -91,10 +121,11 @@ namespace database
 
         file_log("Initiating DB connection..");
 
-        std::filesystem::path dirName = std::filesystem::temp_directory_path() / "Buraq" / ".data";
-        if (!std::filesystem::create_directories(dirName))
+        QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        std::filesystem::path dirName = std::filesystem::path(appDataPath.toStdString()) / ".data";
+        if (!std::filesystem::exists(dirName) && !std::filesystem::create_directories(dirName))
         {
-            file_log("Dir " + dirName.string() + " already exists.");
+            file_log("Failed to create directory: " + dirName.string());
         }
 
         std::filesystem::path dbPathName = dirName / "itools.db";
@@ -117,7 +148,7 @@ namespace database
                 outputFile.close();
             }
 
-            QSqlDatabase dbEngine = QSqlDatabase::addDatabase("QSQLITE");
+            static QSqlDatabase dbEngine = QSqlDatabase::addDatabase("QSQLITE");
             dbEngine.setDatabaseName(QString::fromStdString(dbName));
 
             if (!dbEngine.open())

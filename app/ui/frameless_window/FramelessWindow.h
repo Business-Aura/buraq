@@ -42,62 +42,43 @@ public:
     ~FramelessWindow() override;
 
     [[nodiscard]] Editor* getEditor() const;
-    [[nodiscard]] PluginManager* getLangPluginManager() const;;
+    [[nodiscard]] PluginManager* getLangPluginManager() const;
 
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
+protected:
+    bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
 
 public slots:
     void processStatusSlot(const QString&, int timeout = 5000) const;
     void closeWindowSlot();
     void showMaximizeOrRestoreSlot();
-    void handleDragWindow(QMouseEvent* event);
 
 protected:
     virtual bool maybeSave() { return true; }
-    std::unique_ptr<Frame> m_Frame;
+    Frame* m_Frame;
     QStatusBar* m_statusBar{};
-    std::unique_ptr<ToolBar> m_toolBar;
+    ToolBar* m_toolBar;
     std::unique_ptr<buraq::buraq_api> api_context;
 
     // buttons
-    std::unique_ptr<QPushButton> m_settingsButton;
-    std::unique_ptr<QPushButton> m_minimizeButton;
-    std::unique_ptr<QPushButton> m_maximizeButton;
-    std::unique_ptr<QPushButton> m_closeButton;
+    QPushButton* m_settingsButton;
+    QPushButton* m_minimizeButton;
+    QPushButton* m_maximizeButton;
+    QPushButton* m_closeButton;
 
     // splitters
-     std::unique_ptr<QSplitter> rightSideSplitter;
-     std::unique_ptr<QSplitter> topAreaSplitter;
+     QSplitter* rightSideSplitter;
+     QSplitter* topAreaSplitter;
 
     UserSettings userPreferences;
 
-    bool m_resizing = false;
-    bool m_dragging = false;
-    Qt::Edges m_resizeEdges;
-    int m_resizeMargin = 5; // The pixel margin to detect resizing
-    QPoint m_dragPosition; // To store the offset of the mouse click from the m_window's top-left
-
 private:
-    // Helper function to update the cursor shape based on position
-    void updateCursorShape(const QPoint& pos);
-
-    // Helper function to calculate which edges the mouse is on
-    [[nodiscard]] Qt::Edges calculateEdges(const QPoint& pos, int margin) const;
-
-    void initContentAreaLayout(QWidget* mainContentArea);
-
+    void setupTitleBar();
     ThemeManager& themeManager;
-
-    std::unique_ptr<PluginManager> pluginManager;
-    std::unique_ptr<QGridLayout> m_centralWidgetLayout;
-    std::unique_ptr<QGridLayout> m_placeHolderLayout;
+    PluginManager* pluginManager;
 
 protected:
     void resizeEvent(QResizeEvent *event) override {
         emit windowResize(event->size());
-        // Always call the base class implementation.
         QMainWindow::resizeEvent(event);
     }
 signals:

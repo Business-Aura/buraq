@@ -86,6 +86,12 @@ if [ -z "$VCPKG_CMAKE_PATH" ] || [ -z "$VCPKG_NINJA_PATH" ] || [ -z "$DOTNET_PAT
     exit 1
 fi
 
+if [ -z "$QT_PATH" ]; then
+    echo "Error: QT_PATH environment variable is not set."
+    echo "Please set it to your Qt installation directory (e.g., C:/Qt/6.8.3/mingw_64)."
+    exit 1
+fi
+
 echo "Found Vcpkg CMake executable at: $VCPKG_CMAKE_PATH"
 echo "Found Vcpkg Ninja executable at: $VCPKG_NINJA_PATH"
 echo "Found dotnet installation at: $DOTNET_PATH"
@@ -119,6 +125,7 @@ ls -al "${DOTNET_BIN_DIR}"
     -DVCPKG_TARGET_TRIPLET="${VCPKG_TARGET_TRIPLET}" \
     -DVCPKG_DEFAULT_HOST_TRIPLET="${VCPKG_TARGET_TRIPLET}" \
     -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
+    -DCMAKE_PREFIX_PATH="${QT_PATH}" \
     -DCMAKE_DOTNET_TARGET_FRAMEWORK="/c/Program Files/dotnet/packs/Microsoft.NETCore.App.Host.win-x64/9.0.7/runtimes/win-x64/native" \
     -DCMAKE_MAKE_PROGRAM="${VCPKG_NINJA_PATH}"
 

@@ -13,7 +13,10 @@
 #include "CommonWidget.h"
 #include "editor/LineNumberAreaWidget.h"
 
+class BuraqTextEdit;
+
 class EditorMargin final : public CommonWidget {
+	Q_OBJECT
 
 public slots:
 	void updateState(const buraq::EditorState &newState) const;
@@ -23,14 +26,15 @@ public slots:
 public:
 
 	explicit EditorMargin(QWidget *windowPtr, QWidget *parent = nullptr);
-	void setEditor(QPlainTextEdit *editor) { m_editor = editor; }
+	void setEditor(BuraqTextEdit *editor) { m_editor = editor; }
+	BuraqTextEdit* getEditor() const { return m_editor; }
 	~EditorMargin() override = default;
 
 private:
 	QWidget *windowPtr;
-	std::unique_ptr<CodeRunner> codeRunner;
-	std::unique_ptr<LineNumberAreaWidget> line_numbers_widget;
-	QPlainTextEdit *m_editor{}; // Pointer to the associated editor
+	CodeRunner* codeRunner;
+	LineNumberAreaWidget* line_numbers_widget;
+	BuraqTextEdit *m_editor{}; // Pointer to the associated editor
 
 	void setupSignals() const override;
 	int lineNumberAreaWidth();

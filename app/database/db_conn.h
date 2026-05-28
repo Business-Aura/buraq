@@ -34,19 +34,28 @@
 
 namespace database
 {
-    constexpr auto FILES_SQL = "CREATE TABLE IF NOT EXISTS files(id INTEGER PRIMARY KEY, file_path VARCHAR UNIQUE, file_name VARCHAR);";
+    constexpr auto WORKSPACE_SQL = "CREATE TABLE IF NOT EXISTS workspace(id INTEGER PRIMARY KEY, folder_path VARCHAR UNIQUE, last_file_path VARCHAR);";
 
-    constexpr auto INSERT_FILE_SQL = "INSERT INTO files(file_path, file_name) VALUES(?, ?);";
+    constexpr auto INSERT_WORKSPACE_SQL = "INSERT OR REPLACE INTO workspace(id, folder_path) VALUES(1, ?);";
 
-    constexpr auto SELECT_FILES_SQL = "SELECT * FROM files;";
+    constexpr auto SELECT_WORKSPACE_SQL = "SELECT folder_path FROM workspace WHERE id = 1;";
 
-    constexpr auto SELECT_FILE_BY_FILE_PATH_SQL = "SELECT * FROM files WHERE file_path = ?;";
+    constexpr auto DELETE_WORKSPACE_SQL ="DELETE FROM workspace WHERE id = 1;";
 
-    constexpr auto DELETE_BY_FILE_PATH_SQL ="DELETE FROM files WHERE file_path = ?;";
+    constexpr auto UPDATE_LAST_FILE_SQL = "UPDATE workspace SET last_file_path = ? WHERE id = 1;";
 
-    QVariant insertFile(const QString& filePath, const QString& title);
-    QVariant deleteRow(const QString& filePath);
-    QList<FileObject*> findPreviouslyOpenedFiles();
+    constexpr auto SELECT_LAST_FILE_SQL = "SELECT last_file_path FROM workspace WHERE id = 1;";
+
+    constexpr auto CLEAR_LAST_FILE_SQL = "UPDATE workspace SET last_file_path = NULL WHERE id = 1;";
+
+    void setWorkspacePath(const QString& folderPath);
+    QString getWorkspacePath();
+    void clearWorkspacePath();
+
+    void setLastOpenedFilePath(const QString& filePath);
+    QString getLastOpenedFilePath();
+    void clearLastOpenedFilePath();
+    
     QSqlError init_db();
     bool db_conn();
 }

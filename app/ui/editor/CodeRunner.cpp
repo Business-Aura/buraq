@@ -153,5 +153,4 @@ void CodeRunner::setupSignals()
 
     // Signal to update the out component in AppUI component for the completed process
     connect(this, &CodeRunner::updateOutputResult, window, &MainWindow::processResultSlot);
-    connect(this, &CodeRunner::statusUpdate, m_psClient, &PSClient::connected);
 }

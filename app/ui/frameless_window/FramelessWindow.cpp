@@ -24,67 +24,44 @@
 
 #include "Frame/Frame.h"
 
+#if defined(Q_OS_WIN)
+#include <windows.h>
+#include <windowsx.h>
+#endif
+
 FramelessWindow::FramelessWindow(QWidget* parent)
     : QMainWindow(parent),
       themeManager(ThemeManager::instance()),
-      userPreferences(SettingsManager::loadSettings()),
-      m_dragPosition(QPoint(0, 0))
+      userPreferences(SettingsManager::loadSettings())
 {
     resize(QSize(1200, 700));
-    //move(userPreferences.windowPosition);
-
-    m_Frame = std::make_unique<Frame>(this, true, userPreferences.windowSize);
-
-    // Initialize the ThemeManager instance
-    installEventFilter(&themeManager);
 
     // Set the m_window flag to remove the default frame
     setWindowFlags(Qt::FramelessWindowHint);
 
     // Generate the icon at runtime
-    const auto appLogo = QIcon(":/icons/buraq.ico");
+    const auto appLogo = QIcon(":/icons/buraq.png");
     setWindowIcon(appLogo);
 
+    m_Frame = new Frame(this, true, userPreferences.windowSize);
+
+    // Initialize the ThemeManager instance
+    installEventFilter(&themeManager);
+
     // Set the central widget for the QMainWindow
-    setCentralWidget(m_Frame.get());
+    setCentralWidget(m_Frame);
 
     // Custom Title Bar
-    const auto m_titleBar_ = m_Frame->getTitleBar();
-    const auto toolBarEvent = new ToolBarEvent(this);
-    m_titleBar_->installEventFilter(toolBarEvent);
-
-    connect(toolBarEvent, &ToolBarEvent::dragWindow, this, &FramelessWindow::handleDragWindow);
-    connect(toolBarEvent, &ToolBarEvent::showMaximizedOrRestore, this, &FramelessWindow::showMaximizeOrRestoreSlot);
-    connect(toolBarEvent, &ToolBarEvent::showMinimized, this, &FramelessWindow::showMinimized);
-
-    m_minimizeButton = std::make_unique<QPushButton>("—", m_titleBar_); // Underscore for minimize
-    m_minimizeButton->setObjectName("minimizeButton"); // For specific styling
-
-    m_maximizeButton = std::make_unique<QPushButton>("☐", m_titleBar_); // Square for maximize/restore
-    m_maximizeButton->setObjectName("maximizeButton"); // For specific styling
-
-    m_settingsButton = std::make_unique<QPushButton>("⋮", m_titleBar_);
-    m_settingsButton->setToolTip("IDE and Project Settings");
-    m_settingsButton->setObjectName("settingGearButton");
-
-    m_settingsButton->setFixedSize(40, m_titleBar_->height());
-    m_minimizeButton->setFixedSize(40, m_titleBar_->height());
-    m_maximizeButton->setFixedSize(40, m_titleBar_->height());
-
-    const auto titleBarLayout = m_Frame->getExtraButtonsLayout();
-    titleBarLayout->addStretch();
-    titleBarLayout->addWidget(m_settingsButton.get());
-    titleBarLayout->addWidget(m_minimizeButton.get());
-    titleBarLayout->addWidget(m_maximizeButton.get());
+    setupTitleBar();
 
     // Add Tool bar
     const auto toolkitBar = m_Frame->getToolKitBar();
-    m_toolBar = std::make_unique<ToolBar>(toolkitBar);
+    m_toolBar = new ToolBar(toolkitBar);
     m_toolBar->setFixedHeight(35);
     m_toolBar->addFileMenu(); // Add the File menu first
     if (const auto layout = toolkitBar->layout(); layout)
     {
-        layout->addWidget(m_toolBar.get());
+        layout->addWidget(m_toolBar);
     }
 
     // Status bar
@@ -95,25 +72,133 @@ FramelessWindow::FramelessWindow(QWidget* parent)
     bottomPanel->layout()->addWidget(m_statusBar);
 
     // Connections
-    connect(m_maximizeButton.get(), &QPushButton::clicked, this, &FramelessWindow::showMaximizeOrRestoreSlot);
-    connect(m_minimizeButton.get(), &QPushButton::clicked, this, &FramelessWindow::showMinimized);
     connect(this, &FramelessWindow::closeApp, this, &FramelessWindow::close);
-    connect(this, &FramelessWindow::windowResize, m_Frame.get(), &Frame::windowResizeSlot);
-
-    // Create an instance of your settings dialog
-    const auto settingsDialog = new SettingsDialog(this);
-    // Connect the button's click signal to open the dialog
-    connect(m_settingsButton.get(), &QPushButton::clicked, settingsDialog, &SettingsDialog::exec);
+    connect(this, &FramelessWindow::windowResize, m_Frame, &Frame::windowResizeSlot);
 }
 
-// smart pointers will be cleaned up by std::unique_ptr
 FramelessWindow::~FramelessWindow()
 {
     // save the last window size & position
     userPreferences.windowSize = this->size();
-    userPreferences.windowPosition = m_dragPosition;
+    userPreferences.windowPosition = this->pos();
     SettingsManager::saveSettings(userPreferences);
-};
+}
+
+void FramelessWindow::setupTitleBar()
+{
+    const auto titleBar = m_Frame->getTitleBar();
+    
+    m_minimizeButton = new QPushButton("—", titleBar);
+    m_maximizeButton = new QPushButton("☐", titleBar);
+    m_settingsButton = new QPushButton("⋮", titleBar);
+    
+    m_minimizeButton->setObjectName("minimizeButton");
+    m_maximizeButton->setObjectName("maximizeButton");
+    m_settingsButton->setObjectName("settingGearButton");
+    m_settingsButton->setToolTip("IDE and Project Settings");
+
+    m_settingsButton->setFixedSize(40, titleBar->height());
+    m_minimizeButton->setFixedSize(40, titleBar->height());
+    m_maximizeButton->setFixedSize(40, titleBar->height());
+
+    const auto titleBarLayout = m_Frame->getExtraButtonsLayout();
+    titleBarLayout->addStretch();
+    titleBarLayout->addWidget(m_settingsButton);
+    titleBarLayout->addWidget(m_minimizeButton);
+    titleBarLayout->addWidget(m_maximizeButton);
+
+    connect(m_minimizeButton, &QPushButton::clicked, this, &FramelessWindow::showMinimized);
+    connect(m_maximizeButton, &QPushButton::clicked, this, &FramelessWindow::showMaximizeOrRestoreSlot);
+
+    const auto settingsDialog = new SettingsDialog(this);
+    connect(m_settingsButton, &QPushButton::clicked, settingsDialog, &SettingsDialog::exec);
+}
+
+
+bool FramelessWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
+{
+#if defined(Q_OS_WIN)
+    MSG* msg = static_cast<MSG*>(message);
+
+    if (msg->message == WM_NCHITTEST) {
+        const LONG border_width = 8; //in pixels
+        RECT winrect;
+        GetWindowRect(reinterpret_cast<HWND>(winId()), &winrect);
+
+        long x = GET_X_LPARAM(msg->lParam);
+        long y = GET_Y_LPARAM(msg->lParam);
+
+        bool resizeWidth = minimumWidth() != maximumWidth();
+        bool resizeHeight = minimumHeight() != maximumHeight();
+
+        if (resizeWidth) {
+            //left border
+            if (x >= winrect.left && x < winrect.left + border_width) {
+                *result = HTLEFT;
+                return true;
+            }
+            //right border
+            if (x < winrect.right && x >= winrect.right - border_width) {
+                *result = HTRIGHT;
+                return true;
+            }
+        }
+        if (resizeHeight) {
+            //bottom border
+            if (y < winrect.bottom && y >= winrect.bottom - border_width) {
+                *result = HTBOTTOM;
+                return true;
+            }
+            //top border
+            if (y >= winrect.top && y < winrect.top + border_width) {
+                *result = HTTOP;
+                return true;
+            }
+        }
+        if (resizeWidth && resizeHeight) {
+            //bottom left corner
+            if (x >= winrect.left && x < winrect.left + border_width &&
+                y < winrect.bottom && y >= winrect.bottom - border_width) {
+                *result = HTBOTTOMLEFT;
+                return true;
+            }
+            //bottom right corner
+            if (x < winrect.right && x >= winrect.right - border_width &&
+                y < winrect.bottom && y >= winrect.bottom - border_width) {
+                *result = HTBOTTOMRIGHT;
+                return true;
+            }
+            //top left corner
+            if (x >= winrect.left && x < winrect.left + border_width &&
+                y >= winrect.top && y < winrect.top + border_width) {
+                *result = HTTOPLEFT;
+                return true;
+            }
+            //top right corner
+            if (x < winrect.right && x >= winrect.right - border_width &&
+                y >= winrect.top && y < winrect.top + border_width) {
+                *result = HTTOPRIGHT;
+                return true;
+            }
+        }
+        
+        // Check if the cursor is over the title bar area (m_Frame->getTitleBar())
+        QPoint localMousePos = m_Frame->getTitleBar()->mapFromGlobal(QPoint(x, y));
+        if (m_Frame->getTitleBar()->rect().contains(localMousePos)) {
+            // Check if the cursor is over any of the buttons
+            if (m_minimizeButton->geometry().contains(localMousePos) ||
+                m_maximizeButton->geometry().contains(localMousePos) ||
+                m_settingsButton->geometry().contains(localMousePos)) {
+                // Let the button handle the event
+                 return QMainWindow::nativeEvent(eventType, message, result);
+            }
+            *result = HTCAPTION;
+            return true;
+        }
+    }
+#endif
+    return QMainWindow::nativeEvent(eventType, message, result);
+}
 
 void FramelessWindow::closeWindowSlot()
 {
@@ -147,102 +232,7 @@ void FramelessWindow::processStatusSlot(const QString& message, const int timeou
     }
 }
 
-void FramelessWindow::handleDragWindow(QMouseEvent* event)
-{
-    if (event->buttons() & Qt::LeftButton)
-    {
-        move(event->globalPosition().toPoint() - m_dragPosition);
-        event->accept();
-    }
-}
-
 PluginManager* FramelessWindow::getLangPluginManager() const
 {
-    return pluginManager.get();
-}
-
-Qt::Edges FramelessWindow::calculateEdges(const QPoint& pos, const int margin) const
-{
-    Qt::Edges edges;
-    if (pos.x() < margin) edges |= Qt::LeftEdge;
-    if (pos.x() > width() - margin) edges |= Qt::RightEdge;
-    if (pos.y() < margin) edges |= Qt::TopEdge;
-    if (pos.y() > height() - margin) edges |= Qt::BottomEdge;
-    return edges;
-}
-
-void FramelessWindow::updateCursorShape(const QPoint& pos)
-{
-    if (m_resizing)
-        return;
-
-    m_resizeEdges = calculateEdges(pos, m_resizeMargin);
-
-    if (m_resizeEdges == (Qt::TopEdge | Qt::LeftEdge) || m_resizeEdges == (Qt::BottomEdge | Qt::RightEdge))
-        setCursor(Qt::SizeFDiagCursor);
-    else if (m_resizeEdges == (Qt::TopEdge | Qt::RightEdge) || m_resizeEdges == (Qt::BottomEdge | Qt::LeftEdge))
-        setCursor(Qt::SizeBDiagCursor);
-    else if (m_resizeEdges & (Qt::LeftEdge | Qt::RightEdge))
-        setCursor(Qt::SizeHorCursor);
-    else if (m_resizeEdges & (Qt::TopEdge | Qt::BottomEdge))
-        setCursor(Qt::SizeVerCursor);
-    else
-        setCursor(Qt::ArrowCursor);
-}
-
-void FramelessWindow::mousePressEvent(QMouseEvent* event)
-{
-    if (event->button() == Qt::LeftButton)
-    {
-        if (m_resizeEdges != 0)
-        {
-            m_resizing = true;
-            m_dragPosition = event->globalPosition().toPoint();
-            event->accept();
-            return;
-        }
-    }
-    QWidget::mousePressEvent(event);
-}
-
-void FramelessWindow::mouseMoveEvent(QMouseEvent* event)
-{
-    if (m_resizing)
-    {
-        const QPoint currentPos = event->globalPosition().toPoint();
-        const QPoint delta = currentPos - m_dragPosition;
-        QRect newGeometry = geometry();
-
-        if (m_resizeEdges & Qt::LeftEdge) newGeometry.setLeft(newGeometry.left() + delta.x());
-        if (m_resizeEdges & Qt::RightEdge) newGeometry.setRight(newGeometry.right() + delta.x());
-        if (m_resizeEdges & Qt::TopEdge) newGeometry.setTop(newGeometry.top() + delta.y());
-        if (m_resizeEdges & Qt::BottomEdge) newGeometry.setBottom(newGeometry.bottom() + delta.y());
-
-        if (newGeometry.width() < minimumWidth()) newGeometry.setLeft(geometry().left());
-        if (newGeometry.height() < minimumHeight()) newGeometry.setTop(geometry().top());
-
-        setGeometry(newGeometry);
-        m_dragPosition = currentPos;
-        emit windowResize(this->size());
-    }
-    else if (m_dragging)
-    {
-        move(event->globalPosition().toPoint() - m_dragPosition);
-    }
-    else
-    {
-        updateCursorShape(event->pos());
-    }
-    QWidget::mouseMoveEvent(event);
-}
-
-void FramelessWindow::mouseReleaseEvent(QMouseEvent* event)
-{
-    if (event->button() == Qt::LeftButton)
-    {
-        m_dragging = false;
-        m_resizing = false;
-        setCursor(Qt::ArrowCursor);
-    }
-    QWidget::mouseReleaseEvent(event);
+    return pluginManager;
 }

@@ -4,68 +4,78 @@
 
 #include "LineNumberAreaWidget.h"
 #include <QPainter>
-#include <QPalette> // For theme colors
+#include <QPalette>
+#include <QTextBlock>
+#include "EditorMargin.h"
+#include "Editor.h"
 
 LineNumberAreaWidget::LineNumberAreaWidget(QWidget *parent) : QWidget(parent) {
-	// It's good to set an initial size policy or minimum width
 	setMinimumWidth(5);
 }
 
 void LineNumberAreaWidget::updateEditorState(const buraq::EditorState &state) {
-	if (m_editorState != state) { // Basic check to avoid unnecessary updates
-		m_editorState = state;
-		update(); // This is KEY: it schedules a call to paintEvent()
-	}
+	Q_UNUSED(state);
+	update();
 }
 
 void LineNumberAreaWidget::paintEvent(QPaintEvent *event) {
-	Q_UNUSED(event); // We are redrawing the whole thing based on m_editorState
+	auto margin = qobject_cast<EditorMargin*>(parentWidget());
+	if (!margin) return;
+	auto editor = margin->getEditor();
+	if (!editor) return;
 
-	// Create a QPainter that is active for THIS widget.
-	// It automatically begins and ends.
 	QPainter painter(this);
+	
+	// Draw background matching editor/margin theme background
+	QColor bgColor = palette().color(QPalette::Window);
+	painter.fillRect(event->rect(), bgColor);
 
-	// Use this widget's fontMetrics
-	const int lineHeight =  std::max(19, m_editorState.lineHeight);
+	// Match editor font
+	painter.setFont(editor->font());
 
-	int currentY = 0; // Start Y position from the top. Add padding if needed.
+	// Get vertical offset of the editor viewport relative to the editor widget
+	QPoint viewportOffset = editor->viewport()->mapTo(editor, QPoint(0, 0));
+	int vOffset = viewportOffset.y();
 
-	// Loop to draw line numbers.
-	for (int block_num_to_display = 1; block_num_to_display <= m_editorState.blockCount; ++block_num_to_display) {
-		QRect lineAreaRect(0, currentY, width(), lineHeight); // Use this widget's width()
+	QTextBlock block = editor->firstVisibleBlock();
+	int blockNumber = block.blockNumber();
+	
+	// Calculate top and bottom coordinates of the block mapped to our widget
+	int top = qRound(editor->blockBoundingGeometry(block).translated(editor->contentOffset()).top()) + vOffset;
+	int bottom = top + qRound(editor->blockBoundingRect(block).height());
 
-		if (currentY >= height()) { // Use this widget's height()
-			break; // Stop if drawing outside the widget's visible area
-		}
+	int cursorBlockNumber = editor->textCursor().blockNumber();
 
-		// Highlight the active line
-		// Ensure m_editorState.cursorBlockNumber is 0-indexed if comparing with (block_num_to_display - 1)
-		if (m_editorState.isSelected) {
-			auto it = std::find(
-					m_editorState.selectedBlockNumbers.begin(),
-					m_editorState.selectedBlockNumbers.end(),
-					(block_num_to_display - 1)
-			);
+	while (block.isValid() && top <= event->rect().bottom()) {
+		if (block.isVisible() && bottom >= event->rect().top()) {
+			QRect lineAreaRect(0, top, width(), bottom - top);
 
-			if (it != m_editorState.selectedBlockNumbers.end()) {
-				// value is found.
-				painter.fillRect(lineAreaRect, QColor(Qt::cyan).lighter(25));
-			} else {
-				// ignore
+			// Active line highlight in the margin (matches the editor's highlight height and position)
+			if (blockNumber == cursorBlockNumber) {
+				QColor highlightColor = QColor(0, 188, 212, 25); // Subtle cyan
+				painter.fillRect(lineAreaRect, highlightColor);
 			}
-		} else if (m_editorState.cursorBlockNumber == (block_num_to_display - 1)) {
-			painter.fillRect(lineAreaRect, QColor(Qt::lightGray).lighter(25));
+
+			QString numberText = QString::number(blockNumber + 1);
+			int textPaddingRight = 8;
+			QRect textDrawingRect = lineAreaRect;
+			textDrawingRect.setRight(lineAreaRect.right() - textPaddingRight);
+
+			// Distinct colors: cyan for active line, gray for inactive lines
+			QColor textColor = palette().color(QPalette::WindowText);
+			if (blockNumber == cursorBlockNumber) {
+				textColor = QColor("#00BCD4"); // Cyan accent
+			} else {
+				// Make inactive line numbers softer/semi-transparent
+				textColor = QColor(textColor.red(), textColor.green(), textColor.blue(), 140);
+			}
+			painter.setPen(textColor);
+			painter.drawText(textDrawingRect, Qt::AlignRight | Qt::AlignVCenter, numberText);
 		}
 
-		QString numberText = QString::number(block_num_to_display);
-		int textPaddingLeft = 4;
-		QRect textDrawingRect = lineAreaRect;
-		textDrawingRect.setLeft(lineAreaRect.left() + textPaddingLeft);
-
-		painter.setPen(palette().color(QPalette::Light)); // Use a color from the widget's palette
-		painter.drawText(textDrawingRect, Qt::AlignLeft | Qt::AlignVCenter, numberText);
-
-		currentY += lineHeight;
+		block = block.next();
+		top = bottom;
+		bottom = top + qRound(editor->blockBoundingRect(block).height());
+		++blockNumber;
 	}
-	// qDebug() << "LineNumberAreaWidget::paintEvent finished.";
 }

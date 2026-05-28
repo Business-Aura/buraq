@@ -165,15 +165,27 @@ QLabel#HeaderLabel:hover {
 }
 
 /* Text Editors & Input Fields */
-QPlainTextEdit, QTextEdit, QLineEdit, QWidget#EditorMargin {
+QTextEdit, QLineEdit {
     background-color: #333333; /* Darker surface */
     color: #E0E0E0;
     border: 1px solid #4A4A4A; /* Slightly lighter border */
     border-radius: 0px;
     padding: 0px;
 }
-QPlainTextEdit:focus, QTextEdit:focus, QLineEdit:focus, QWidget#Editor:focus, QWidget#EditorMargin:focus {
-    border: 1px solid #2196F3; /* Primary blue border on focus */
+QTextEdit:focus, QLineEdit:focus {
+    border: 1px solid #2196F3;
+}
+QWidget#Editor {
+    background-color: #333333;
+    border: 1px solid #4A4A4A;
+    border-radius: 0px;
+}
+QWidget#Editor:focus-within {
+    border: 1px solid #2196F3;
+}
+QPlainTextEdit#InternalPlainTextEdit, QWidget#EditorMargin {
+    background-color: transparent;
+    border: none;
 }
 QPlainTextEdit::placeholder, QLineEdit::placeholder {
     color: #BBBBBB;
@@ -256,4 +268,45 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical,
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
     background: none;
+}
+
+/* Settings Dialog Visual Differentiation */
+QDialog#SettingsDialog QWidget#Frame {
+    border: 2px solid #2196F3;
+    background-color: #2b2b2b;
+}
+
+QDialog#SettingsDialog QWidget#secondaryTitleBar {
+    background-color: #202020;
+    border-bottom: 1px solid #444444;
+}
+
+QLabel#titleText {
+    color: #FFFFFF;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Tab Widget & Bar Flat Styling */
+QTabWidget::pane {
+    border: 1px solid #444444;
+    background-color: #2b2b2b;
+}
+
+QTabBar::tab {
+    background-color: #202020;
+    color: #b0b0b0;
+    padding: 8px 16px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    margin-right: 2px;
+}
+
+QTabBar::tab:selected, QTabBar::tab:hover {
+    background-color: #2b2b2b;
+    color: #ffffff;
+}
+
+QTabBar::tab:selected {
+    border-bottom: 2px solid #2196F3;
 }

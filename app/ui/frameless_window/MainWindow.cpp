@@ -14,11 +14,11 @@
 #include "Frame/Frame.h"
 #include "output_display/OutputDisplay.h"
 
-MainWindow::MainWindow(QWidget* parent) : FramelessWindow(parent),
-                                          m_outPutArea(std::make_unique<OutputDisplay>(this)),
-                                          m_editor(std::make_unique<Editor>(this))
+MainWindow::MainWindow(QWidget* parent) : FramelessWindow(parent)
 {
-    m_drawer = std::make_unique<CustomDrawer>(m_editor.get());
+    m_outPutArea = new OutputDisplay(this);
+    m_editor = new Editor(this);
+    m_drawer = new CustomDrawer(m_editor);
 
     const auto main_content_widget = m_Frame->getMainContentWidget();
     const auto contentArea = new QWidget(main_content_widget);
@@ -32,21 +32,21 @@ MainWindow::MainWindow(QWidget* parent) : FramelessWindow(parent),
     // 2. LEFT CONTROL PANEL: A vertical layout for the top and bottom buttons.
     const auto leftPanelLayout = m_Frame->getLeftSidePanelLayout();
 
-    m_folderButton = std::make_unique<QPushButton>("🗀", contentArea);
+    m_folderButton = new QPushButton("🗀", contentArea);
     m_folderButton->setObjectName("folderButton");
     m_folderButton->setFixedSize(35, 35);
 
-    connect(m_folderButton.get(), &QPushButton::clicked, this, &MainWindow::updateDrawer);
+    connect(m_folderButton, &QPushButton::clicked, this, &MainWindow::updateDrawer);
 
-    m_outputButton = std::make_unique<QPushButton>("❯_", contentArea);
+    m_outputButton = new QPushButton("❯_", contentArea);
     m_outputButton->setObjectName("outputConsoleButton");
     m_outputButton->setFixedSize(35, 35);
 
-    connect(m_outputButton.get(), &QPushButton::clicked, this, &MainWindow::onShowOutputButtonClicked);
+    connect(m_outputButton, &QPushButton::clicked, this, &MainWindow::onShowOutputButtonClicked);
 
-    leftPanelLayout->addWidget(m_folderButton.get()); // Add button to the top
+    leftPanelLayout->addWidget(m_folderButton); // Add button to the top
     leftPanelLayout->addStretch(); // Pushes buttons to top and bottom
-    leftPanelLayout->addWidget(m_outputButton.get()); // Add button to the bottom
+    leftPanelLayout->addWidget(m_outputButton); // Add button to the bottom
 
     // 3a. Top Area (Editor + Drawer)
     QWidget* topAreaWidget = new QWidget();
@@ -55,34 +55,34 @@ MainWindow::MainWindow(QWidget* parent) : FramelessWindow(parent),
     topAreaLayout->setContentsMargins(0, 0, 0, 0);
 
     // 3. MAIN VERTICAL SPLITTER: Separates the top (editor/drawer) from the bottom (output).
-    rightSideSplitter = std::make_unique<QSplitter>(Qt::Vertical);
+    rightSideSplitter = new QSplitter(Qt::Vertical);
 
     // 4. HORIZONTAL SPLITTER: This will go in the top section of the vertical splitter.
     // It separates the drawer from the editor.
-    topAreaSplitter = std::make_unique<QSplitter>(Qt::Horizontal);
+    topAreaSplitter = new QSplitter(Qt::Horizontal);
 
     // Add the drawer and editor to the HORIZONTAL splitter
-    topAreaSplitter->addWidget(m_drawer.get());
-    topAreaSplitter->addWidget(m_editor.get());
+    topAreaSplitter->addWidget(m_drawer);
+    topAreaSplitter->addWidget(m_editor);
     topAreaSplitter->setSizes({250, 750}); // Initial widths for drawer and editor
 
     // 5. BOTTOM AREA (Output)
 
     // 6. ASSEMBLE THE VERTICAL SPLITTER:
     // Add the horizontal splitter (as the top widget) and the output area (as the bottom widget).
-    rightSideSplitter->addWidget(topAreaSplitter.get());
-    rightSideSplitter->addWidget(m_outPutArea.get());
+    rightSideSplitter->addWidget(topAreaSplitter);
+    rightSideSplitter->addWidget(m_outPutArea);
     rightSideSplitter->setSizes({500, 200}); // Initial heights for top and bottom sections
 
     // 7. ASSEMBLE THE MAIN LAYOUT
-    mainLayout->addWidget(rightSideSplitter.get(), 1); // The '1' stretch factor allows it to expand
+    mainLayout->addWidget(rightSideSplitter, 1); // The '1' stretch factor allows it to expand
 
     // 8. Connect ToolBar signals
     if (m_toolBar)
     {
-        connect(m_toolBar.get(), &ToolBar::newFileTriggered, this, &MainWindow::onNewFileTriggered);
-        connect(m_toolBar.get(), &ToolBar::openFileTriggered, this, &MainWindow::onOpenFileTriggered);
-        connect(m_toolBar.get(), &ToolBar::saveFileTriggered, this, &MainWindow::onSaveFileTriggered);
+        connect(m_toolBar, &ToolBar::newFileTriggered, this, &MainWindow::onNewFileTriggered);
+        connect(m_toolBar, &ToolBar::openFileTriggered, this, &MainWindow::onOpenFileTriggered);
+        connect(m_toolBar, &ToolBar::saveFileTriggered, this, &MainWindow::onSaveFileTriggered);
     }
 }
 
@@ -123,7 +123,7 @@ void MainWindow::onOpenFileTriggered()
 {
     if (m_drawer)
     {
-        m_drawer->onAddButtonClicked();
+        m_drawer->onAddFolderButtonClicked();
     }
 }
 
@@ -177,7 +177,7 @@ void MainWindow::onShowOutputButtonClicked() const
 
 Editor* MainWindow::getEditor() const
 {
-    return m_editor.get();
+    return m_editor;
 }
 
 void MainWindow::updateDrawer() const

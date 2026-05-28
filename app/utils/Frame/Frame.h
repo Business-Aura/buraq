@@ -16,6 +16,7 @@ class QHBoxLayout;
 class QVBoxLayout;
 class QToolBar;
 class QSize;
+class QLabel;
 
 class Frame final : public QWidget
 {
@@ -33,69 +34,74 @@ public:
 
     QWidget* getTitleBar() const
     {
-        return m_titleBar.get();
+        return m_titleBar;
+    }
+
+    QLabel* getTitleLabel() const
+    {
+        return m_titleLabel;
     }
 
     QWidget* getToolKitBar() const
     {
-        return m_topPanel.get();
+        return m_topPanel;
     }
 
     QWidget* getMainContentWidget() const
     {
-        return m_centralWidget.get();
+        return m_centralWidget;
     }
 
     QWidget* getBottomPanelWidget() const
     {
-        return m_bottomPanel.get();
+        return m_bottomPanel;
     }
 
     QVBoxLayout* getMainLayout() const
     {
-        return m_mainLayout.get();
+        return m_mainLayout;
     }
 
     QHBoxLayout* getExtraButtonsLayout() const
     {
-        return m_extraButtonsLayout.get();
+        return m_extraButtonsLayout;
     }
 
     QHBoxLayout* getBottomPanelLayout() const
     {
-        return m_bottomPanelLayout.get();
+        return m_bottomPanelLayout;
     }
 
     QVBoxLayout* getLeftSidePanelLayout() const
     {
-        return m_leftSidePanelLayout.get();
+        return m_leftSidePanelLayout;
     }
 
     QVBoxLayout* getRightSidePanelLayout() const
     {
-        return m_rightSidePanelLayout.get();
+        return m_rightSidePanelLayout;
     }
 
 signals:
     void closeWindow();
 
 private:
-    std::unique_ptr<QWidget> m_extraButtons;
-    std::unique_ptr<QWidget> m_leftSidePanel;
-    std::unique_ptr<QWidget> m_titleBar;
-    std::unique_ptr<QWidget> m_topPanel;
-    std::unique_ptr<QWidget> m_rightSidePanel;
-    std::unique_ptr<QWidget> m_bottomPanel;
-    std::unique_ptr<QWidget> m_centralWidget;
-    std::unique_ptr<QVBoxLayout> m_mainLayout;
-    std::unique_ptr<QVBoxLayout> m_leftSidePanelLayout;
-    std::unique_ptr<QVBoxLayout> m_rightSidePanelLayout;
-    std::unique_ptr<QHBoxLayout> m_extraButtonsLayout;
-    std::unique_ptr<QHBoxLayout> m_bottomPanelLayout;
-    std::unique_ptr<QPushButton> m_closeButton;
+    QWidget* m_extraButtons;
+    QWidget* m_leftSidePanel;
+    QWidget* m_titleBar;
+    QLabel* m_titleLabel;
+    QWidget* m_topPanel;
+    QWidget* m_rightSidePanel;
+    QWidget* m_bottomPanel;
+    QWidget* m_centralWidget;
+    QVBoxLayout* m_mainLayout;
+    QVBoxLayout* m_leftSidePanelLayout;
+    QVBoxLayout* m_rightSidePanelLayout;
+    QHBoxLayout* m_extraButtonsLayout;
+    QHBoxLayout* m_bottomPanelLayout;
+    QPushButton* m_closeButton;
     std::unique_ptr<SettingsManager> settingsManager;
-    std::unique_ptr<Frame> m_Frame;
-    std::unique_ptr<ToolBarEvent> m_titlebarEvents;
+    ToolBarEvent* m_titlebarEvents;
     UserSettings m_userPreference;
     QWidget* m_frameContainer;
 
