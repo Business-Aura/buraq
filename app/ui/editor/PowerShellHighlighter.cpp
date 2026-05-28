@@ -1,83 +1,93 @@
 #include "PowerShellHighlighter.h"
-#include <QTextDocument>
 
-namespace buraq {
-
-PowerShellHighlighter::PowerShellHighlighter() {
-    // Keywords
-    m_rules.push_back({QRegularExpression("\\b(if|else|elseif|for|foreach|while|do|until|switch|case|default|break|continue|return|try|catch|finally|throw|function|filter|workflow|parallel|sequence|in|process|begin|end|param|exit|using|class|enum|interface|namespace)\\b", QRegularExpression::CaseInsensitiveOption), "color:#FFB76B"});
-
-    // Common Cmdlets
-    m_rules.push_back({QRegularExpression("\\b(Get-|Set-|New-|Remove-|Invoke-|Add-|Write-|Test-|Export-|Import-|Enter-|Exit-|Select-|Where-|Sort-|Group-|Measure-|Format-|Out-)[a-zA-Z0-9]+\\b", QRegularExpression::CaseInsensitiveOption), "color:#FFB76B"});
-
-    // Variables
-    m_rules.push_back({QRegularExpression("\\$\\w+", QRegularExpression::CaseInsensitiveOption), "color:#87CEEB"});
-
-    // Strings
-    m_rules.push_back({QRegularExpression("\"(.*?)\""), "color:#3eb489"});
-    m_rules.push_back({QRegularExpression("'(.*?)'"), "color:#3eb489"});
-
-    // Comments
-    m_rules.push_back({QRegularExpression("#.*"), "color:gray"});
+PowerShellHighlighter::PowerShellHighlighter(QTextDocument *parent)
+    : QSyntaxHighlighter(parent)
+{
+    updateTheme(ThemeManager::instance().currentTheme());
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, &PowerShellHighlighter::updateTheme);
 }
 
-QString PowerShellHighlighter::escapeHtml(const QString& text) {
-    QString escaped = text;
-    escaped.replace("&", "&amp;");
-    escaped.replace("<", "&lt;");
-    escaped.replace(">", "&gt;");
-    escaped.replace("\"", "&quot;");
-    escaped.replace("'", "&#39;");
-    return escaped;
-}
+void PowerShellHighlighter::updateTheme(AppTheme theme)
+{
+    highlightingRules.clear();
 
-QString PowerShellHighlighter::highlight(const QString& text) {
-    if (text.isEmpty()) {
-        return "<p> </p>";
+    HighlightingRule rule;
+
+    keywordFormat.setForeground((theme == Dark) ? QColor("#CC7832") : QColor("#0033B3")); // Darcula/IntelliJ Light Keyword
+    keywordFormat.setFontWeight(QFont::Bold);
+    const QString keywordPatterns[] = {
+        QStringLiteral("\\bif\\b"), QStringLiteral("\\belse\\b"), QStringLiteral("\\belseif\\b"),
+        QStringLiteral("\\bswitch\\b"), QStringLiteral("\\bforeach\\b"), QStringLiteral("\\bfor\\b"),
+        QStringLiteral("\\bwhile\\b"), QStringLiteral("\\bdo\\b"), QStringLiteral("\\buntil\\b"),
+        QStringLiteral("\\bbreak\\b"), QStringLiteral("\\bcontinue\\b"), QStringLiteral("\\breturn\\b"),
+        QStringLiteral("\\bfunction\\b"), QStringLiteral("\\bfilter\\b"), QStringLiteral("\\bglobal\\b"),
+        QStringLiteral("\\bscript\\b"), QStringLiteral("\\blocal\\b"), QStringLiteral("\\bprivate\\b"),
+        QStringLiteral("\\bparam\\b"), QStringLiteral("\\bbegin\\b"), QStringLiteral("\\bprocess\\b"),
+        QStringLiteral("\\bend\\b"), QStringLiteral("\\bdynamicparam\\b"), QStringLiteral("\\bclass\\b"),
+        QStringLiteral("\\benum\\b"), QStringLiteral("\\bhidden\\b"), QStringLiteral("\\bstatic\\b")
+    };
+    for (const QString &pattern : keywordPatterns) {
+        rule.pattern = QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption);
+        rule.format = keywordFormat;
+        highlightingRules.append(rule);
     }
 
-    QString highlighted = escapeHtml(text);
+    variableFormat.setForeground((theme == Dark) ? QColor("#9876AA") : QColor("#000000")); // Darcula/IntelliJ Light Variable
+    rule.pattern = QRegularExpression(QStringLiteral("\\$[A-Za-z0-9_]+"));
+    rule.format = variableFormat;
+    highlightingRules.append(rule);
 
-    // This is a simple implementation that doesn't handle overlapping rules perfectly
-    // For a production editor, QSyntaxHighlighter is much better.
-    // But we are sticking to the existing architecture of HTML conversion.
+    singleLineCommentFormat.setForeground((theme == Dark) ? QColor("#808080") : QColor("#8C8C8C")); // Darcula/IntelliJ Light Comment
+    rule.pattern = QRegularExpression(QStringLiteral("#[^\n]*"));
+    rule.format = singleLineCommentFormat;
+    highlightingRules.append(rule);
 
-    // We need to apply rules carefully to avoid highlighting within HTML tags.
-    // A simple way is to find all matches, sort them, and then build the HTML.
+    multiLineCommentFormat.setForeground((theme == Dark) ? QColor("#808080") : QColor("#8C8C8C")); // Darcula/IntelliJ Light Comment
 
-    struct Match {
-        int start;
-        int length;
-        QString style;
-    };
-    std::vector<Match> matches;
+    stringFormat.setForeground((theme == Dark) ? QColor("#6A8759") : QColor("#067D17")); // Darcula/IntelliJ Light String
+    rule.pattern = QRegularExpression(QStringLiteral("(\"[^\"]*\")|('[^']*')"));
+    rule.format = stringFormat;
+    highlightingRules.append(rule);
 
-    for (const auto& rule : m_rules) {
-        QRegularExpressionMatchIterator it = rule.pattern.globalMatch(text);
-        while (it.hasNext()) {
-            QRegularExpressionMatch match = it.next();
-            matches.push_back({match.capturedStart(), match.capturedLength(), rule.style});
+    functionFormat.setFontItalic(true);
+    functionFormat.setForeground((theme == Dark) ? QColor("#FFC66D") : QColor("#00627A")); // Darcula/IntelliJ Light Function
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[A-Za-z0-9_]+-[A-Za-z0-9_]+\\b"));
+    rule.format = functionFormat;
+    highlightingRules.append(rule);
+
+    commentStartExpression = QRegularExpression(QStringLiteral("<#"));
+    commentEndExpression = QRegularExpression(QStringLiteral("#>"));
+
+    rehighlight();
+}
+
+void PowerShellHighlighter::highlightBlock(const QString &text)
+{
+    for (const HighlightingRule &rule : qAsConst(highlightingRules)) {
+        QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
+        while (matchIterator.hasNext()) {
+            QRegularExpressionMatch match = matchIterator.next();
+            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
         }
     }
+    setCurrentBlockState(0);
 
-    // Sort matches by start position
-    std::sort(matches.begin(), matches.end(), [](const Match& a, const Match& b) {
-        if (a.start != b.start) return a.start < b.start;
-        return a.length > b.length; // Longest match first if same start
-    });
+    int startIndex = 0;
+    if (previousBlockState() != 1)
+        startIndex = text.indexOf(commentStartExpression);
 
-    QString result;
-    int lastPos = 0;
-    for (const auto& match : matches) {
-        if (match.start < lastPos) continue; // Skip overlapping
-
-        result += escapeHtml(text.mid(lastPos, match.start - lastPos));
-        result += "<span style='" + match.style + "'>" + escapeHtml(text.mid(match.start, match.length)) + "</span>";
-        lastPos = match.start + match.length;
+    while (startIndex >= 0) {
+        QRegularExpressionMatch match = commentEndExpression.match(text, startIndex);
+        int endIndex = match.capturedStart();
+        int commentLength = 0;
+        if (endIndex == -1) {
+            setCurrentBlockState(1);
+            commentLength = text.length() - startIndex;
+        } else {
+            commentLength = endIndex - startIndex
+                            + match.capturedLength();
+        }
+        setFormat(startIndex, commentLength, multiLineCommentFormat);
+        startIndex = text.indexOf(commentStartExpression, startIndex + commentLength);
     }
-    result += escapeHtml(text.mid(lastPos));
-
-    return "<p>" + result + "</p>";
 }
-
-} // namespace buraq

@@ -34,6 +34,7 @@
     <qresource prefix="/icons">
         <file alias="index.theme">icons/dark/index.theme</file>
         <file alias="buraq.ico">icons/buraq.ico</file>
+        <file alias="buraq.png">icons/buraq_old.png</file>
         <file alias="favicon.ico">icons/favicon.ico</file>
         <file alias="close_icon">icons/dark/png/close_icon.png</file>
         <file alias="home">icons/dark/png/home.png</file>

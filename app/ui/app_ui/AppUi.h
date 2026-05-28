@@ -47,7 +47,7 @@ public:
 private:
     std::unique_ptr<PluginManager> pluginManager;
     std::unique_ptr<buraq::buraq_api> api_context;
-    std::unique_ptr<MainWindow> m_main_window;
+    MainWindow* m_main_window;
 
     // For running background services
     ManagedProcess* m_bridgeProcess{};

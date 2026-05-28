@@ -8,6 +8,7 @@
 #include <QDialog>
 
 #include "settings/UserSettings.h"
+#include "Filters/ThemeManager/ThemeManager.h" // Needed for ThemeManager reference
 
 // Forward declarations for Qt classes to speed up compilation
 class QTabWidget;
@@ -25,16 +26,19 @@ public:
     explicit SettingsDialog(QWidget* parent = nullptr);
     ~SettingsDialog() override;
 
+public slots:
+    void accept() override;
+
 signals:
     void applySettingChanges();
 
 private slots:
     // Slot to handle saving the settings
-    void applyChanges() const;
+    void applyChanges();
     void setTheme(const int index);
 
 private:
-    std::unique_ptr<Frame> m_Frame;
+    Frame* m_Frame;
 
     SettingsManager* settingsManager;
     UserSettings userPreference;

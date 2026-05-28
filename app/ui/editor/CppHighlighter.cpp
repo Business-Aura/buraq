@@ -1,74 +1,104 @@
 #include "CppHighlighter.h"
-#include <algorithm>
 
-namespace buraq {
-
-CppHighlighter::CppHighlighter() {
-    // Keywords
-    m_rules.push_back({QRegularExpression("\\b(alignas|alignof|and|and_eq|asm|atomic_cancel|atomic_commit|atomic_noexcept|auto|bitand|bitor|break|case|catch|class|compl|concept|const|consteval|constexpr|constinit|const_cast|continue|co_await|co_return|co_yield|decltype|default|delete|do|dynamic_cast|else|enum|explicit|export|extern|false|for|friend|goto|if|inline|mutable|namespace|new|noexcept|not|not_eq|nullptr|operator|or|or_eq|private|protected|public|reflexpr|register|reinterpret_cast|requires|return|sizeof|static|static_assert|static_cast|struct|switch|synchronized|template|this|thread_local|throw|true|try|typedef|typeid|typename|union|using|virtual|volatile|while|xor|xor_eq)\\b"), "color:#FFB76B"});
-
-    // Types
-    m_rules.push_back({QRegularExpression("\\b(bool|char|char8_t|char16_t|char32_t|double|float|int|long|short|signed|unsigned|void|wchar_t|size_t|int8_t|int16_t|int32_t|int64_t|uint8_t|uint16_t|uint32_t|uint64_t)\\b"), "color:#87CEEB"});
-
-    // Preprocessor directives
-    m_rules.push_back({QRegularExpression("^\\s*#\\s*\\w+"), "color:#BD93F9"});
-
-    // Strings
-    m_rules.push_back({QRegularExpression("\".*?\""), "color:#3eb489"});
-    m_rules.push_back({QRegularExpression("'.*?'"), "color:#3eb489"});
-
-    // Comments
-    m_rules.push_back({QRegularExpression("//.*"), "color:gray"});
-    m_rules.push_back({QRegularExpression("/\\*.*?\\*/"), "color:gray"});
+CppHighlighter::CppHighlighter(QTextDocument *parent)
+    : QSyntaxHighlighter(parent)
+{
+    updateTheme(ThemeManager::instance().currentTheme());
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, &CppHighlighter::updateTheme);
 }
 
-QString CppHighlighter::escapeHtml(const QString& text) {
-    QString escaped = text;
-    escaped.replace("&", "&amp;");
-    escaped.replace("<", "&lt;");
-    escaped.replace(">", "&gt;");
-    escaped.replace("\"", "&quot;");
-    escaped.replace("'", "&#39;");
-    return escaped;
-}
+void CppHighlighter::updateTheme(AppTheme theme)
+{
+    highlightingRules.clear();
 
-QString CppHighlighter::highlight(const QString& text) {
-    if (text.isEmpty()) {
-        return "<p> </p>";
+    HighlightingRule rule;
+
+    keywordFormat.setForeground((theme == Dark) ? QColor("#CC7832") : QColor("#0033B3")); // Darcula/IntelliJ Light Keyword
+    keywordFormat.setFontWeight(QFont::Bold);
+    const QString keywordPatterns[] = {
+        QStringLiteral("\\bchar\\b"), QStringLiteral("\\bclass\\b"), QStringLiteral("\\bconst\\b"),
+        QStringLiteral("\\bdouble\\b"), QStringLiteral("\\benum\\b"), QStringLiteral("\\bexplicit\\b"),
+        QStringLiteral("\\bfriend\\b"), QStringLiteral("\\binline\\b"), QStringLiteral("\\bint\\b"),
+        QStringLiteral("\\blong\\b"), QStringLiteral("\\bnamespace\\b"), QStringLiteral("\\boperator\\b"),
+        QStringLiteral("\\bprivate\\b"), QStringLiteral("\\bprotected\\b"), QStringLiteral("\\bpublic\\b"),
+        QStringLiteral("\\bshort\\b"), QStringLiteral("\\bsignals\\b"), QStringLiteral("\\bsigned\\b"),
+        QStringLiteral("\\bslots\\b"), QStringLiteral("\\bstatic\\b"), QStringLiteral("\\bstruct\\b"),
+        QStringLiteral("\\btemplate\\b"), QStringLiteral("\\btypedef\\b"), QStringLiteral("\\btypename\\b"),
+        QStringLiteral("\\bunion\\b"), QStringLiteral("\\bunsigned\\b"), QStringLiteral("\\bvirtual\\b"),
+        QStringLiteral("\\bvoid\\b"), QStringLiteral("\\bvolatile\\b"), QStringLiteral("\\bbool\\b")
+    };
+    for (const QString &pattern : keywordPatterns) {
+        rule.pattern = QRegularExpression(pattern);
+        rule.format = keywordFormat;
+        highlightingRules.append(rule);
     }
 
-    struct Match {
-        int start;
-        int length;
-        QString style;
-    };
-    std::vector<Match> matches;
+    classFormat.setFontWeight(QFont::Bold);
+    classFormat.setForeground((theme == Dark) ? QColor("#4E807D") : QColor("#000000")); // Darcula/IntelliJ Light Class/Type
+    rule.pattern = QRegularExpression(QStringLiteral("\\bQ[A-Za-z]+\\b"));
+    rule.format = classFormat;
+    highlightingRules.append(rule);
 
-    for (const auto& rule : m_rules) {
-        QRegularExpressionMatchIterator it = rule.pattern.globalMatch(text);
-        while (it.hasNext()) {
-            QRegularExpressionMatch match = it.next();
-            matches.push_back({match.capturedStart(), match.capturedLength(), rule.style});
+    singleLineCommentFormat.setForeground((theme == Dark) ? QColor("#808080") : QColor("#8C8C8C")); // Darcula/IntelliJ Light Comment
+    rule.pattern = QRegularExpression(QStringLiteral("//[^\n]*"));
+    rule.format = singleLineCommentFormat;
+    highlightingRules.append(rule);
+
+    multiLineCommentFormat.setForeground((theme == Dark) ? QColor("#808080") : QColor("#8C8C8C")); // Darcula/IntelliJ Light Comment
+
+    preprocessorFormat.setForeground((theme == Dark) ? QColor("#BBB529") : QColor("#A626A4"));
+    rule.pattern = QRegularExpression(QStringLiteral("^\\s*#\\s*[A-Za-z_]+"));
+    rule.format = preprocessorFormat;
+    highlightingRules.append(rule);
+
+    rule.pattern = QRegularExpression(QStringLiteral("(?<=#include\\s*)<[^>]+>"));
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
+
+    quotationFormat.setForeground((theme == Dark) ? QColor("#6A8759") : QColor("#067D17")); // Darcula/IntelliJ Light String
+    rule.pattern = QRegularExpression(QStringLiteral("\".*\""));
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
+
+    functionFormat.setFontItalic(true);
+    functionFormat.setForeground((theme == Dark) ? QColor("#FFC66D") : QColor("#00627A")); // Darcula/IntelliJ Light Function
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[A-Za-z0-9_]+(?=\\()"));
+    rule.format = functionFormat;
+    highlightingRules.append(rule);
+
+    commentStartExpression = QRegularExpression(QStringLiteral("/\\*"));
+    commentEndExpression = QRegularExpression(QStringLiteral("\\*/"));
+
+    rehighlight();
+}
+
+void CppHighlighter::highlightBlock(const QString &text)
+{
+    for (const HighlightingRule &rule : qAsConst(highlightingRules)) {
+        QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
+        while (matchIterator.hasNext()) {
+            QRegularExpressionMatch match = matchIterator.next();
+            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
         }
     }
+    setCurrentBlockState(0);
 
-    std::sort(matches.begin(), matches.end(), [](const Match& a, const Match& b) {
-        if (a.start != b.start) return a.start < b.start;
-        return a.length > b.length;
-    });
+    int startIndex = 0;
+    if (previousBlockState() != 1)
+        startIndex = text.indexOf(commentStartExpression);
 
-    QString result;
-    int lastPos = 0;
-    for (const auto& match : matches) {
-        if (match.start < lastPos) continue;
-
-        result += escapeHtml(text.mid(lastPos, match.start - lastPos));
-        result += "<span style='" + match.style + "'>" + escapeHtml(text.mid(match.start, match.length)) + "</span>";
-        lastPos = match.start + match.length;
+    while (startIndex >= 0) {
+        QRegularExpressionMatch match = commentEndExpression.match(text, startIndex);
+        int endIndex = match.capturedStart();
+        int commentLength = 0;
+        if (endIndex == -1) {
+            setCurrentBlockState(1);
+            commentLength = text.length() - startIndex;
+        } else {
+            commentLength = endIndex - startIndex
+                            + match.capturedLength();
+        }
+        setFormat(startIndex, commentLength, multiLineCommentFormat);
+        startIndex = text.indexOf(commentStartExpression, startIndex + commentLength);
     }
-    result += escapeHtml(text.mid(lastPos));
-
-    return "<p>" + result + "</p>";
 }
-
-} // namespace buraq

@@ -54,8 +54,6 @@ if (WIN32)
 			"$<TARGET_FILE:${PROJECT_NAME}>"
 			# This ensures the deployment command runs from the directory where the .exe is located
 			WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-			# This makes sure ${PROJECT_NAME}.exe is built BEFORE this command tries to run
-			DEPENDS ${PROJECT_NAME}
 			COMMENT "Running windeployqt for $<TARGET_FILE:${PROJECT_NAME}>"
 			# This makes the output appear nicely in the terminal
 			USES_TERMINAL

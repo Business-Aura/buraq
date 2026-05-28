@@ -72,6 +72,7 @@ set(ITOOLS_HEADERS
         ui/editor/Highlighter.h
         ui/editor/PowerShellHighlighter.h
         ui/editor/CppHighlighter.h
+        ui/editor/LanguageProvider.h
         ui/EditorMargin.h
         ui/CustomDrawer.h
         ui/FilePathLabel.h
@@ -144,9 +145,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         Qt6::Sql
         Qt6::Xml
         Qt6::Svg
-        Qt6::SvgPrivate
         Qt6::SvgWidgets
-        Qt6::SvgWidgetsPrivate
         CURL::libcurl
         Boost::property_tree
         unofficial::sqlite3::sqlite3
@@ -168,6 +167,13 @@ endif ()
 get_target_property(QT_INSTALLATION_DLL_PATH Qt::Core LOCATION)
 get_filename_component(INSTALLATION_DLL_DIR "${QT_INSTALLATION_DLL_PATH}" DIRECTORY)
 
+# Path to vcpkg installed binaries
+if(NOT VCPKG_INSTALLED_DIR)
+    set(VCPKG_INSTALLED_DIR "${CMAKE_BINARY_DIR}/vcpkg_installed")
+endif()
+set(VCPKG_INSTALLED_BIN_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin")
+set(VCPKG_INSTALLED_DEBUG_BIN_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/bin")
+
 set(QT_THIRD_PARTY_DEPENDENCY_DLLS "libsqlite3.dll")
 
 foreach (DLL_FILENAME ${QT_THIRD_PARTY_DEPENDENCY_DLLS})
@@ -175,10 +181,11 @@ foreach (DLL_FILENAME ${QT_THIRD_PARTY_DEPENDENCY_DLLS})
             NAMES ${DLL_FILENAME}
             PATHS
             "${INSTALLATION_DLL_DIR}"
-            "${INSTALLATION_DLL_DIR}/../debug/bin"
+            "${VCPKG_INSTALLED_BIN_DIR}"
+            "${VCPKG_INSTALLED_DEBUG_BIN_DIR}"
             REQUIRED
     )
-    message(STATUS "LIB_SQLITE_PATH for copy: ${LIB_SQLITE_PATH}")
+    message(STATUS "Found ${DLL_FILENAME}: ${LIB_SQLITE_PATH}")
 
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LIB_SQLITE_PATH}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
@@ -213,8 +220,6 @@ if (WIN32)
             "$<TARGET_FILE:${PROJECT_NAME}>"
             # This ensures the deployment command runs from the directory where the .exe is located
             WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-            # This makes sure ${PROJECT_NAME}.exe is built BEFORE this command tries to run
-            DEPENDS ${PROJECT_NAME}
             COMMENT "Running windeployqt for $<TARGET_FILE:${PROJECT_NAME}>"
             # This makes the output appear nicely in the terminal
             USES_TERMINAL

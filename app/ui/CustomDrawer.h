@@ -27,55 +27,46 @@
 #ifndef CUSTOM_DRAWER_H
 #define CUSTOM_DRAWER_H
 
-
 #include <QWidget>
-#include <QGridLayout>
+#include <QVBoxLayout>
+#include <QTreeView>
+#include <QFileSystemModel>
 #include "editor/Editor.h"
-#include "FilePathLabel.h"
 
 class QPushButton;
-
-struct drawerState {
-	QWidget *activeFileLabel;
-};
+class QLabel;
 
 class CustomDrawer : public QWidget {
-Q_OBJECT
-
-	void setActive(QWidget *pLabel);
+    Q_OBJECT
 
 public slots:
-    void onAddButtonClicked();
+    void onAddFolderButtonClicked();
+    void onCloseWorkspaceButtonClicked();
 
 private slots:
-
-	void onFileLabelClick();
+    void onTreeViewClicked(const QModelIndex& index);
 
 public:
-	enum DrawerMeasurements {
-		width = 256,
-	};
+    enum DrawerMeasurements {
+        width = 256,
+    };
 
-	explicit CustomDrawer(Editor *editor);
+    explicit CustomDrawer(Editor *editor);
+    ~CustomDrawer() override = default;
 
-	void toggle();
-
-	// smart pointer will be cleaned up.
-	~CustomDrawer() override = default;
-
-	void showPreviouslyOpenedFiles() const;
+    void toggle();
 
 private:
-	Editor *editor;
-	std::unique_ptr<QPushButton> addFile;
-	std::unique_ptr<QVBoxLayout> pLayout;
+    Editor *editor;
+    QPushButton* addFolder;
+    QPushButton* closeWorkspace;
+    QLabel* workspaceLabel;
+    QVBoxLayout* pLayout;
 
-	struct drawerState state = {.activeFileLabel = nullptr};
+    QTreeView* m_treeView;
+    QFileSystemModel* m_fileSystemModel;
 
-	static void openFilePath(FilePathLabel *label, const QString &filePath, const QString &fileName);
-
-	void createFileLabel(const QString &filePath, const QString &fileName, bool shouldAutoOpenFile) const;
+    void setWorkspace(const QString& dirPath, bool saveToDb = true);
 };
-
 
 #endif //CUSTOM_DRAWER_H

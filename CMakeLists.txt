@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.27)
 
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
 project(MainProject)
 
 set(CMAKE_ROOT_PROJECT_POSTFIX buraq)

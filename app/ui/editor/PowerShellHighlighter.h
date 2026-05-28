@@ -1,20 +1,41 @@
 #ifndef POWERSHELL_HIGHLIGHTER_H
 #define POWERSHELL_HIGHLIGHTER_H
 
-#include "Highlighter.h"
+#include <QSyntaxHighlighter>
+#include <QTextCharFormat>
+#include <QRegularExpression>
+#include "Filters/ThemeManager/ThemeManager.h"
 
-namespace buraq {
+class PowerShellHighlighter : public QSyntaxHighlighter
+{
+    Q_OBJECT
 
-class PowerShellHighlighter : public Highlighter {
 public:
-    PowerShellHighlighter();
-    QString highlight(const QString& text) override;
+    PowerShellHighlighter(QTextDocument *parent = nullptr);
+
+public slots:
+    void updateTheme(AppTheme theme);
+
+protected:
+    void highlightBlock(const QString &text) override;
 
 private:
-    std::vector<HighlightRule> m_rules;
-    QString escapeHtml(const QString& text);
-};
+    struct HighlightingRule
+    {
+        QRegularExpression pattern;
+        QTextCharFormat format;
+    };
+    QVector<HighlightingRule> highlightingRules;
 
-} // namespace buraq
+    QRegularExpression commentStartExpression;
+    QRegularExpression commentEndExpression;
+
+    QTextCharFormat keywordFormat;
+    QTextCharFormat variableFormat;
+    QTextCharFormat singleLineCommentFormat;
+    QTextCharFormat multiLineCommentFormat;
+    QTextCharFormat stringFormat;
+    QTextCharFormat functionFormat;
+};
 
 #endif // POWERSHELL_HIGHLIGHTER_H

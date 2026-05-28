@@ -35,17 +35,17 @@ protected:
     bool maybeSave() override;
 
 private:
-    std::unique_ptr<OutputDisplay> m_outPutArea;
-    std::unique_ptr<CustomDrawer> m_drawer;
-    std::unique_ptr<Editor> m_editor;
+    OutputDisplay* m_outPutArea;
+    CustomDrawer* m_drawer;
+    Editor* m_editor;
 
     // buttons
-    std::unique_ptr<QPushButton> m_folderButton;
-    std::unique_ptr<QPushButton> m_outputButton;
+    QPushButton* m_folderButton;
+    QPushButton* m_outputButton;
 
     // splitters
-    std::unique_ptr<QSplitter> rightSideSplitter;
-    std::unique_ptr<QSplitter> topAreaSplitter;
+    QSplitter* rightSideSplitter;
+    QSplitter* topAreaSplitter;
 };
 
 

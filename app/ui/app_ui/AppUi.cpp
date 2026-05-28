@@ -50,8 +50,7 @@
 #include "frameless_window/MainWindow.h"
 #include "ManagedProcess/ManagedProcess.h"
 
-AppUi::AppUi(QObject* parent) : QObject(parent),
-                                m_main_window(std::make_unique<MainWindow>(nullptr))
+AppUi::AppUi(QObject* parent) : QObject(parent)
 {
     // Load configuration settings
     Config::singleton();
@@ -74,6 +73,8 @@ AppUi::AppUi(QObject* parent) : QObject(parent),
         file_log("Error executing initializing db:" + err.text().toStdString());
         exit(2);
     }
+
+    m_main_window = new MainWindow(nullptr);
 
     // user's home dir should be the default location when the app starts.
     // In the later release, save user's last dir/path
@@ -116,7 +117,7 @@ void AppUi::showUi() const
 void AppUi::initAppLayout()
 {
     // Signals
-    connect(this, &AppUi::updateStatusBar, m_main_window.get(), &FramelessWindow::processStatusSlot);
+    connect(this, &AppUi::updateStatusBar, m_main_window, &FramelessWindow::processStatusSlot);
 }
 
 void AppUi::initAppContext()
@@ -172,9 +173,6 @@ void AppUi::setupWorker()
 
     // --- 2. Connect Signals and Slots ---
 
-    // Minion (worker thread) initialize Powershell language support
-    connect(m_minion, &Minion::doWork, this, &AppUi::initPSLangSupport);
-
     // Clean up the thread and worker when the thread's event loop finishes.
     connect(m_workerThread, &QThread::finished, m_minion, &QObject::deleteLater);
     connect(m_workerThread, &QThread::finished, m_workerThread, &QObject::deleteLater);
@@ -216,7 +214,7 @@ QVariant AppUi::verifyApplicationVersion()
             return {};
         }
 
-        VersionUpdateDialog versionUpdater(m_main_window.get());
+        VersionUpdateDialog versionUpdater(m_main_window);
         versionUpdater.setWindowTitle(
             "A new version " + QString::fromStdString(update_info.latestVersion) + " is available!");
         versionUpdater.setContent(QString::fromStdString(update_info.releaseNotes));
