@@ -37,6 +37,7 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
     {
         m_titleBar = new QWidget(m_frameContainer);
         m_titlebarEvents = new ToolBarEvent(m_titleBar);
+        m_titleBar->installEventFilter(m_titlebarEvents);
         m_titleBar->setFixedHeight(35); // Set your desired title bar height
         m_titleBar->setObjectName("customTitleBar"); // For styling
 
@@ -68,10 +69,10 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
         if (!hasToolBar) {
             version->hide();
             iconButton->hide();
-            titleBarLayout->addWidget(iconButton);
-            titleBarLayout->addWidget(m_titleLabel);
-            titleBarLayout->addWidget(version);
         }
+        titleBarLayout->addWidget(iconButton);
+        titleBarLayout->addWidget(m_titleLabel);
+        titleBarLayout->addWidget(version);
 
         // --- End Logo and Title ---
 
@@ -183,16 +184,26 @@ Frame::~Frame()
 
 void Frame::windowResizeSlot(const QSize& size) const
 {
-    qDebug() << "WindowResizeSlot " << size;
-    m_frameContainer->setFixedSize(size);
+    Q_UNUSED(size);
+    // No-op: frame resizes naturally with the window
 }
 
 void Frame::windowDrag(QMouseEvent* event)
 {
-    m_dragPosition = event->globalPosition().toPoint();
-    if (const auto parentWidget = dynamic_cast<QWidget*>(parent()))
-    {
-        parentWidget->move(m_dragPosition);
+    if (event->buttons() & Qt::LeftButton) {
+        if (const auto parentWidget = dynamic_cast<QWidget*>(parent()))
+        {
+            if (!m_dragging) {
+                // First move event: record offset from window origin to cursor
+                m_dragPosition = event->globalPosition().toPoint() - parentWidget->frameGeometry().topLeft();
+                m_dragging = true;
+            }
+            if (!parentWidget->isMaximized()) {
+                parentWidget->move(event->globalPosition().toPoint() - m_dragPosition);
+            }
+        }
+        event->accept();
+    } else {
+        m_dragging = false;
     }
-    event->accept();
 }

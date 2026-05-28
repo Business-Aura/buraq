@@ -185,10 +185,11 @@ bool FramelessWindow::nativeEvent(const QByteArray& eventType, void* message, qi
         // Check if the cursor is over the title bar area (m_Frame->getTitleBar())
         QPoint localMousePos = m_Frame->getTitleBar()->mapFromGlobal(QPoint(x, y));
         if (m_Frame->getTitleBar()->rect().contains(localMousePos)) {
-            // Check if the cursor is over any of the buttons
-            if (m_minimizeButton->geometry().contains(localMousePos) ||
-                m_maximizeButton->geometry().contains(localMousePos) ||
-                m_settingsButton->geometry().contains(localMousePos)) {
+            // Check if the cursor is over any of the buttons (use mapFromGlobal for each button)
+            QPoint globalPos(x, y);
+            if (m_minimizeButton->rect().contains(m_minimizeButton->mapFromGlobal(globalPos)) ||
+                m_maximizeButton->rect().contains(m_maximizeButton->mapFromGlobal(globalPos)) ||
+                m_settingsButton->rect().contains(m_settingsButton->mapFromGlobal(globalPos))) {
                 // Let the button handle the event
                  return QMainWindow::nativeEvent(eventType, message, result);
             }
@@ -210,18 +211,16 @@ void FramelessWindow::closeWindowSlot()
 
 void FramelessWindow::showMaximizeOrRestoreSlot()
 {
-    emit windowResize(this->size());
     if (this->isMaximized())
     {
         this->showNormal();
-        m_maximizeButton->setText("☐"); // Restore symbol
+        m_maximizeButton->setText("☐"); // Maximize symbol
     }
     else
     {
         this->showMaximized();
-        m_maximizeButton->setText("❐"); // Actual maximize symbol (might need specific font or icon)
+        m_maximizeButton->setText("❐"); // Restore symbol
     }
-    m_Frame->setMinimumSize(this->size());
 }
 
 void FramelessWindow::processStatusSlot(const QString& message, const int timeout) const
