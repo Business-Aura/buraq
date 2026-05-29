@@ -292,3 +292,70 @@ QTabBar::tab:selected, QTabBar::tab:hover {
 QTabBar::tab:selected {
     border-bottom: 2px solid #2196F3;
 }
+
+/* ── Integrated Terminal ── */
+
+QTabWidget#BottomPanel::pane {
+    border: none;
+    border-top: 1px solid #dcdcdc;
+    background-color: #f8f8f8;
+}
+QTabWidget#BottomPanel > QTabBar::tab {
+    background-color: #e8e8e8;
+    color: #666666;
+    padding: 4px 14px;
+    font-size: 9pt;
+    border: none;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    margin-right: 1px;
+    min-width: 70px;
+}
+QTabWidget#BottomPanel > QTabBar::tab:selected {
+    background-color: #f8f8f8;
+    color: #212121;
+    border-top: 2px solid #2196F3;
+}
+QTabWidget#BottomPanel > QTabBar::tab:hover:!selected {
+    background-color: #d8d8d8;
+    color: #333333;
+}
+
+QTextEdit#TerminalDisplay {
+    background-color: #f8f8f8;
+    color: #212121;
+    border: none;
+    font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+    font-size: 10pt;
+    padding: 4px 6px;
+    selection-background-color: #b3d7ff;
+    selection-color: #000000;
+}
+
+QPushButton#NewTerminalButton {
+    background-color: transparent;
+    color: #666666;
+    border: none;
+    border-radius: 3px;
+    font-size: 14pt;
+    font-weight: bold;
+    padding: 0px;
+}
+QPushButton#NewTerminalButton:hover {
+    background-color: rgba(0,0,0,0.08);
+    color: #212121;
+}
+
+QPushButton#TerminalCloseButton {
+    background-color: transparent;
+    color: #888888;
+    border: none;
+    border-radius: 2px;
+    font-size: 8pt;
+    padding: 0px;
+    margin: 0px;
+}
+QPushButton#TerminalCloseButton:hover {
+    background-color: #E5533D;
+    color: #ffffff;
+}

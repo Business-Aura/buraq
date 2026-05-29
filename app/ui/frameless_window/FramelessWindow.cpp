@@ -112,6 +112,7 @@ void FramelessWindow::setupTitleBar()
 
     const auto settingsDialog = new SettingsDialog(this);
     connect(m_settingsButton, &QPushButton::clicked, settingsDialog, &SettingsDialog::exec);
+    connect(settingsDialog, &SettingsDialog::applySettingChanges, this, &FramelessWindow::onApplySettingChanges);
 }
 
 
@@ -234,4 +235,9 @@ void FramelessWindow::processStatusSlot(const QString& message, const int timeou
 PluginManager* FramelessWindow::getLangPluginManager() const
 {
     return pluginManager;
+}
+
+void FramelessWindow::onApplySettingChanges()
+{
+    userPreferences = SettingsManager::loadSettings();
 }

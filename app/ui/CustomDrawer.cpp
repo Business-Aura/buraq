@@ -168,6 +168,7 @@ void CustomDrawer::onCloseWorkspaceButtonClicked()
     if (editor) {
         editor->clear();
     }
+    emit workspaceChanged("");
 }
 
 void CustomDrawer::setWorkspace(const QString& dirPath, bool saveToDb)
@@ -189,6 +190,8 @@ void CustomDrawer::setWorkspace(const QString& dirPath, bool saveToDb)
     // Update label to show the folder name instead of just "Workspace"
     QFileInfo dirInfo(dirPath);
     workspaceLabel->setText(dirInfo.fileName());
+    
+    emit workspaceChanged(dirPath);
 }
 
 void CustomDrawer::onTreeViewClicked(const QModelIndex& index)

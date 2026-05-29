@@ -15,6 +15,8 @@ class QTabWidget;
 class QDialogButtonBox;
 class QListWidget;
 class QStackedWidget;
+class QComboBox;
+class QLineEdit;
 class SettingsManager;
 class Frame;
 
@@ -47,6 +49,12 @@ private:
     QWidget* createAppearancePage();
     QWidget* createEditorPage();
     QWidget* createAccountPage();
+    QWidget* createTerminalPage();
+
+    // Shell setting UI refs (to read back on apply)
+    QComboBox* m_shellComboBox    = nullptr;
+    QLineEdit* m_shellArgsEdit    = nullptr;
+    QLineEdit* m_customShellEdit  = nullptr;
 
     // Main UI elements
     QTabWidget* m_tabWidget;

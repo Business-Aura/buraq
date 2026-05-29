@@ -69,6 +69,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 
     m_tabWidget->addTab(createAppearancePage(), "Appearance");
     m_tabWidget->addTab(createEditorPage(), "Editor");
+    m_tabWidget->addTab(createTerminalPage(), "Terminal");
     m_tabWidget->addTab(createAccountPage(), "Account");
 
     mainContentLayout->addWidget(m_tabWidget);
@@ -97,8 +98,21 @@ void SettingsDialog::accept()
 
 void SettingsDialog::applyChanges()
 {
+    // Read shell settings from UI widgets
+    if (m_shellComboBox)
+    {
+        const int idx = m_shellComboBox->currentIndex();
+        if (idx == 0)        userPreference.shellPath = "powershell.exe";
+        else if (idx == 1)   userPreference.shellPath = "cmd.exe";
+        else if (idx == 2 && m_customShellEdit)
+            userPreference.shellPath = m_customShellEdit->text().trimmed();
+    }
+    if (m_shellArgsEdit)
+        userPreference.shellArgs = m_shellArgsEdit->text().trimmed();
+
     SettingsManager::saveSettings(userPreference);
     themeManager.setAppTheme(userPreference.theme);
+    emit applySettingChanges();
 }
 
 void SettingsDialog::setTheme(const int index)
@@ -185,6 +199,59 @@ QWidget* SettingsDialog::createAccountPage()
     layout->addRow("API Key:", apiKeyLineEdit);
     layout->addRow("", loginButton);
 
+    pageWidget->setLayout(layout);
+    return pageWidget;
+}
+
+QWidget* SettingsDialog::createTerminalPage()
+{
+    QWidget* pageWidget = new QWidget(this);
+    QVBoxLayout* layout = new QVBoxLayout(pageWidget);
+
+    // ── Shell Group ──
+    QGroupBox* shellGroup = new QGroupBox("Shell", this);
+    QFormLayout* shellLayout = new QFormLayout(shellGroup);
+
+    m_shellComboBox = new QComboBox(this);
+    m_shellComboBox->addItem("PowerShell  (powershell.exe)");
+    m_shellComboBox->addItem("Command Prompt  (cmd.exe)");
+    m_shellComboBox->addItem("Custom...");
+
+    // Pre-select based on saved setting
+    const QString saved = userPreference.shellPath.toLower();
+    if (saved.contains("cmd"))           m_shellComboBox->setCurrentIndex(1);
+    else if (!saved.contains("powershell") && !saved.contains("pwsh"))
+                                          m_shellComboBox->setCurrentIndex(2);
+    else                                  m_shellComboBox->setCurrentIndex(0);
+
+    m_customShellEdit = new QLineEdit(this);
+    m_customShellEdit->setPlaceholderText("e.g. C:\\Program Files\\Git\\bin\\bash.exe");
+    m_customShellEdit->setText(userPreference.shellPath);
+
+    // Show/hide custom path field based on combo selection
+    auto updateCustomVisibility = [this](int idx) {
+        m_customShellEdit->setVisible(idx == 2);
+    };
+    updateCustomVisibility(m_shellComboBox->currentIndex());
+    connect(m_shellComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [updateCustomVisibility](int idx){ updateCustomVisibility(idx); });
+
+    shellLayout->addRow("Shell:", m_shellComboBox);
+    shellLayout->addRow("Custom path:", m_customShellEdit);
+    layout->addWidget(shellGroup);
+
+    // ── Shell Arguments Group ──
+    QGroupBox* argsGroup = new QGroupBox("Startup Arguments", this);
+    QFormLayout* argsLayout = new QFormLayout(argsGroup);
+
+    m_shellArgsEdit = new QLineEdit(this);
+    m_shellArgsEdit->setPlaceholderText("-NoExit -NoLogo");
+    m_shellArgsEdit->setText(userPreference.shellArgs);
+
+    argsLayout->addRow("Arguments:", m_shellArgsEdit);
+    layout->addWidget(argsGroup);
+
+    layout->addStretch();
     pageWidget->setLayout(layout);
     return pageWidget;
 }

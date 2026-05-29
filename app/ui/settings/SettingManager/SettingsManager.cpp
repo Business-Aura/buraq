@@ -21,6 +21,8 @@ void SettingsManager::saveSettings(const UserSettings& settings)
     qsettings.setValue("windowPosition", settings.windowPosition);
     qsettings.setValue("wordWrap", settings.wordWrapEnabled);
     qsettings.setValue("editorFontSize", settings.editorFontSize);
+    qsettings.setValue("shellPath", settings.shellPath);
+    qsettings.setValue("shellArgs", settings.shellArgs);
 
     qsettings.endGroup();
 }
@@ -65,6 +67,8 @@ UserSettings SettingsManager::loadSettings()
         settings.windowPosition = qsettings.value("windowPosition", QVariant::fromValue(settings.windowPosition)).toPoint();
         settings.wordWrapEnabled = qsettings.value("wordWrap", QVariant::fromValue(settings.wordWrapEnabled)).toBool();
         settings.editorFontSize = qsettings.value("editorFontSize", QVariant::fromValue(settings.editorFontSize)).toInt();
+        settings.shellPath = qsettings.value("shellPath", settings.shellPath).toString();
+        settings.shellArgs = qsettings.value("shellArgs", settings.shellArgs).toString();
     }
     catch (...)
     {
