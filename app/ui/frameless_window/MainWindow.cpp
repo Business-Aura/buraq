@@ -5,6 +5,9 @@
 #include <QStatusBar>
 #include <QVBoxLayout>
 #include <QSplitter>
+#include <QShortcut>
+#include <QKeySequence>
+#include <QDir>
 
 #include <QMessageBox>
 #include "editor/Editor.h"
@@ -12,11 +15,13 @@
 #include "MainWindow.h"
 #include "CustomDrawer.h"
 #include "Frame/Frame.h"
+#include "terminal/TerminalPanel.h"
 #include "output_display/OutputDisplay.h"
+#include "../../database/db_conn.h"
 
 MainWindow::MainWindow(QWidget* parent) : FramelessWindow(parent)
 {
-    m_outPutArea = new OutputDisplay(this);
+    m_terminalPanel = new TerminalPanel(this);
     m_editor = new Editor(this);
     m_drawer = new CustomDrawer(m_editor);
 
@@ -69,9 +74,9 @@ MainWindow::MainWindow(QWidget* parent) : FramelessWindow(parent)
     // 5. BOTTOM AREA (Output)
 
     // 6. ASSEMBLE THE VERTICAL SPLITTER:
-    // Add the horizontal splitter (as the top widget) and the output area (as the bottom widget).
+    // Add the horizontal splitter (as the top widget) and the terminal panel (as the bottom widget).
     rightSideSplitter->addWidget(topAreaSplitter);
-    rightSideSplitter->addWidget(m_outPutArea);
+    rightSideSplitter->addWidget(m_terminalPanel);
     rightSideSplitter->setSizes({500, 200}); // Initial heights for top and bottom sections
 
     // 7. ASSEMBLE THE MAIN LAYOUT
@@ -84,6 +89,17 @@ MainWindow::MainWindow(QWidget* parent) : FramelessWindow(parent)
         connect(m_toolBar, &ToolBar::openFileTriggered, this, &MainWindow::onOpenFileTriggered);
         connect(m_toolBar, &ToolBar::saveFileTriggered, this, &MainWindow::onSaveFileTriggered);
     }
+
+    // 9. Ctrl+` shortcut — toggle terminal panel
+    auto* toggleShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_QuoteLeft), this);
+    connect(toggleShortcut, &QShortcut::activated, m_terminalPanel, &TerminalPanel::toggle);
+
+    // 10. Configure terminal shell preferences and active workspace path
+    m_terminalPanel->setShell(userPreferences.shellPath, userPreferences.shellArgs);
+    m_terminalPanel->setProjectDirectory(database::getWorkspacePath());
+
+    // Connect workspace change signal from drawer to terminal panel
+    connect(m_drawer, &CustomDrawer::workspaceChanged, m_terminalPanel, &TerminalPanel::setProjectDirectory);
 }
 
 MainWindow::~MainWindow() = default;
@@ -137,19 +153,14 @@ void MainWindow::onSaveFileTriggered()
 
 void MainWindow::processResultSlot(const int exitCode, const QString& output, const QString& error) const
 {
-    if (m_outPutArea == nullptr) return;
+    if (m_terminalPanel == nullptr) return;
 
-    if (m_outPutArea->show(); exitCode == 0)
-    {
-        m_outPutArea->log(output, error);
+    m_terminalPanel->log(output, error);
+    m_terminalPanel->showOutputTab();
 
-        processStatusSlot(error.isEmpty() ? "Completed!" : "Completed with errors.");
-    }
-    else
-    {
-        processStatusSlot("Process failed!");
-        m_outPutArea->log("", error);
-    }
+    processStatusSlot(exitCode == 0
+        ? (error.isEmpty() ? "Completed!" : "Completed with errors.")
+        : "Process failed!");
 }
 
 void MainWindow::processStatusSlot(const QString& message, const int timeout) const
@@ -162,22 +173,19 @@ void MainWindow::processStatusSlot(const QString& message, const int timeout) co
 
 void MainWindow::onShowOutputButtonClicked() const
 {
-    qDebug() << "Open or close Output";
-    if (m_outPutArea == nullptr) return;
-
-    if (m_outPutArea->isHidden())
-    {
-        m_outPutArea->show();
-    }
-    else
-    {
-        m_outPutArea->hide();
-    }
+    qDebug() << "Toggle bottom panel";
+    if (m_terminalPanel)
+        m_terminalPanel->toggle();
 }
 
 Editor* MainWindow::getEditor() const
 {
     return m_editor;
+}
+
+OutputDisplay* MainWindow::outputDisplay() const
+{
+    return m_terminalPanel ? m_terminalPanel->outputDisplay() : nullptr;
 }
 
 void MainWindow::updateDrawer() const
@@ -192,5 +200,14 @@ void MainWindow::updateDrawer() const
     else
     {
         m_drawer->hide();
+    }
+}
+
+void MainWindow::onApplySettingChanges()
+{
+    FramelessWindow::onApplySettingChanges();
+    if (m_terminalPanel)
+    {
+        m_terminalPanel->setShell(userPreferences.shellPath, userPreferences.shellArgs);
     }
 }

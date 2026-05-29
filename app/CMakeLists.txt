@@ -40,6 +40,10 @@ set(ITOOLS_UI_SOURCES
         ui/CustomDrawer.cpp
         ui/output_display/OutputDisplay.cpp
         ui/CustomLabel.cpp
+        ui/terminal/AnsiParser.cpp
+        ui/terminal/TerminalSession.cpp
+        ui/terminal/TerminalWidget.cpp
+        ui/terminal/TerminalPanel.cpp
 )
 
 set(ITOOLS_UTILS_SOURCES
@@ -116,6 +120,10 @@ set(ITOOLS_HEADERS
         utils/Frame/Frame.h
         ui/frameless_window/MainWindow.cpp
         ui/frameless_window/MainWindow.h
+        ui/terminal/AnsiParser.h
+        ui/terminal/TerminalSession.h
+        ui/terminal/TerminalWidget.h
+        ui/terminal/TerminalPanel.h
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release" AND WIN32)

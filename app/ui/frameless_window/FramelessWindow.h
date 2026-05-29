@@ -54,6 +54,9 @@ public slots:
 
 protected:
     virtual bool maybeSave() { return true; }
+protected slots:
+    virtual void onApplySettingChanges();
+protected:
     Frame* m_Frame;
     QStatusBar* m_statusBar{};
     ToolBar* m_toolBar;

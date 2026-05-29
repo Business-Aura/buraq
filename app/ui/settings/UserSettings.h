@@ -25,6 +25,10 @@ struct UserSettings
     bool wordWrapEnabled = true;
     int editorFontSize = 11;
     SettingsDialogPreference settingsDialog;
+
+    // Terminal settings
+    QString shellPath = "powershell.exe";
+    QString shellArgs = "-NoExit -NoLogo";
 };
 
 #endif // USERSETTINGS_H

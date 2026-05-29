@@ -46,6 +46,9 @@ public slots:
 private slots:
     void onTreeViewClicked(const QModelIndex& index);
 
+signals:
+    void workspaceChanged(const QString& dirPath);
+
 public:
     enum DrawerMeasurements {
         width = 256,

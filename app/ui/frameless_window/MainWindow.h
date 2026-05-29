@@ -10,7 +10,7 @@
 class CustomDrawer; // Forward declaration
 class Editor;
 class Frame;
-class OutputDisplay;
+class TerminalPanel;
 class QPushButton;
 class QSplitter;
 
@@ -31,11 +31,14 @@ public:
     [[nodiscard]] Editor* getEditor() const;
     void onShowOutputButtonClicked() const;
 
+    OutputDisplay* outputDisplay() const;
+
 protected:
     bool maybeSave() override;
+    void onApplySettingChanges() override;
 
 private:
-    OutputDisplay* m_outPutArea;
+    TerminalPanel* m_terminalPanel;
     CustomDrawer* m_drawer;
     Editor* m_editor;
 
