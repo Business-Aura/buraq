@@ -1,6 +1,7 @@
 // TerminalSession.cpp — QProcess shell session implementation
 #include "TerminalSession.h"
 
+#include <QtGlobal>
 #include <QDebug>
 #include <QProcessEnvironment>
 
@@ -32,14 +33,21 @@ TerminalSession::TerminalSession(
 
     // Set environment variables to force color output in tools (like git, npm, gemini, etc.)
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+#if defined(Q_OS_WIN)
+    env.insert("TERM", "dumb");
+    env.insert("VCPKG_MAX_CONCURRENCY", "1");
+    env.insert("MAKEFLAGS", "-j1");
+    // Disable ConPTY in MSYS2/Cygwin to prevent hangs when run under a non-console parent (QProcess)
+    env.insert("MSYS", "disable_pcon");
+    env.insert("CYGWIN", "disable_pcon");
+#else
     env.insert("TERM", "xterm-256color");
+#endif
     env.insert("COLORTERM", "truecolor");
     env.insert("CLICOLOR", "1");
     env.insert("CLICOLOR_FORCE", "1");
     env.insert("FORCE_COLOR", "1");
-    env.insert("GIT_CONFIG_COUNT", "1");
-    env.insert("GIT_CONFIG_KEY_0", "color.ui");
-    env.insert("GIT_CONFIG_VALUE_0", "always");
+    env.insert("GIT_CONFIG_PARAMETERS", "'color.ui=always'");
     m_process->setProcessEnvironment(env);
 
     qDebug() << "[Terminal] Starting shell:" << shellPath << args

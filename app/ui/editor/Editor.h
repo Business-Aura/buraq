@@ -44,6 +44,7 @@ public:
     ~Editor() override = default;
 
     void openAndParseFile(const QString& filePath, QFile::OpenModeFlag modeFlag = QFile::OpenModeFlag::ReadOnly);
+    [[nodiscard]] QString currentFile() const { return m_currentFile; }
     [[nodiscard]] QString toPlainText() const { return m_plainTextEdit->toPlainText(); }
     [[nodiscard]] QString selectedText() const { return m_plainTextEdit->textCursor().selectedText(); }
     void setPlainText(const QString& text) {
@@ -59,7 +60,7 @@ public:
 
     [[nodiscard]] bool isDirty() const { return m_isDirty; }
 
-    void saveFile();
+    bool saveFile();
     void autoSave();
     void highlightCurrentLine();
 

@@ -80,7 +80,7 @@ QPushButton#TextButton:hover, QToolButton#TextButton:hover {
 
 /*Max, Min, Close Buttons*/
 
-#fileMenu {
+#fileMenu, #buildMenu, #buildConfigMenu {
  border: none;
  border-radius: 0px;
 }
@@ -91,6 +91,8 @@ QPushButton#settingGearButton,
 QPushButton#AddFile,
 QPushButton#minimizeButton,
 QPushButton#fileMenuButton,
+QPushButton#buildMenuButton,
+QPushButton#buildConfigMenuButton,
 QPushButton#maximizeButton,
 QPushButton#closeButton,
 QPushButton#settingGearButton  {

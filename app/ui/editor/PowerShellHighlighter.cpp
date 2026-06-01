@@ -3,11 +3,13 @@
 PowerShellHighlighter::PowerShellHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
-    updateTheme(ThemeManager::instance().currentTheme());
-    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, &PowerShellHighlighter::updateTheme);
+    updateTheme(ThemeManager::instance().currentTheme(), false);
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](AppTheme theme) {
+        updateTheme(theme);
+    });
 }
 
-void PowerShellHighlighter::updateTheme(AppTheme theme)
+void PowerShellHighlighter::updateTheme(AppTheme theme, bool triggerRehighlight)
 {
     highlightingRules.clear();
 
@@ -58,7 +60,9 @@ void PowerShellHighlighter::updateTheme(AppTheme theme)
     commentStartExpression = QRegularExpression(QStringLiteral("<#"));
     commentEndExpression = QRegularExpression(QStringLiteral("#>"));
 
-    rehighlight();
+    if (triggerRehighlight) {
+        rehighlight();
+    }
 }
 
 void PowerShellHighlighter::highlightBlock(const QString &text)

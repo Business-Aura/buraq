@@ -21,6 +21,9 @@ public:
 
 	void addCustomAction(const QString &text, const QIcon &icon = QIcon());
 	void addFileMenu();
+	void addBuildMenu();
+	void addBuildConfigMenu(const QString &initialConfig);
+	QString activeBuildConfig() const;
 	QWidget* m_window;
 
 	signals:
@@ -29,6 +32,9 @@ public:
 	void openFileTriggered();
 	void saveFileTriggered();
 	void exitTriggered();
+	void buildProjectTriggered();
+	void runProjectTriggered();
+	void buildConfigChanged(const QString &config);
 
 private slots:
 	void onCustomActionTriggered();
@@ -37,11 +43,22 @@ private slots:
 	void onSaveFile();
 	void onExit();
 	void onFileMenuButtonClicked(); // Add this new slot declaration
+	void onBuildMenuButtonClicked();
+	void onBuildProject();
+	void onRunProject();
+	void onBuildConfigMenuButtonClicked();
+	void onDebugConfigSelected();
+	void onReleaseConfigSelected();
 
 private:
 	QAction *m_customAction;
 	QMenu *m_fileMenu;
-    QPushButton* m_fileMenuButton;
+	QPushButton* m_fileMenuButton;
+	QMenu *m_buildMenu;
+	QPushButton* m_buildMenuButton;
+	QMenu *m_configMenu;
+	QPushButton* m_configMenuButton;
+	QString m_activeConfig;
 };
 
 #endif // TOOLBAR_H

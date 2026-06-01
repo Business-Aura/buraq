@@ -43,9 +43,11 @@ public:
 
     [[nodiscard]] Editor* getEditor() const;
     [[nodiscard]] PluginManager* getLangPluginManager() const;
+    [[nodiscard]] const UserSettings& getUserPreferences() const { return userPreferences; }
 
 protected:
     bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
+    void closeEvent(QCloseEvent* event) override;
 
 public slots:
     void processStatusSlot(const QString&, int timeout = 5000) const;

@@ -25,10 +25,21 @@ struct UserSettings
     bool wordWrapEnabled = true;
     int editorFontSize = 11;
     SettingsDialogPreference settingsDialog;
+    QString buildConfiguration = "Debug";
+    QString vcpkgToolchainPath = "";
+    QString vcpkgTargetTriplet = "";
 
     // Terminal settings
+#if defined(Q_OS_WIN)
     QString shellPath = "powershell.exe";
     QString shellArgs = "-NoExit -NoLogo";
+#elif defined(Q_OS_MAC)
+    QString shellPath = "/bin/zsh";
+    QString shellArgs = "-l";
+#else
+    QString shellPath = "/bin/bash";
+    QString shellArgs = "";
+#endif
 };
 
 #endif // USERSETTINGS_H

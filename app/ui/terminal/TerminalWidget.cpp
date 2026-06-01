@@ -287,3 +287,26 @@ void TerminalWidget::submitCommand()
     m_inputBuffer.clear();
     m_inputAnchor = m_display->document()->characterCount() - 1;
 }
+
+void TerminalWidget::sendCommand(const QString& command)
+{
+    if (m_session && m_session->isRunning())
+    {
+        QTextCursor cursor(m_display->document());
+        cursor.movePosition(QTextCursor::End);
+
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor("#E0E0E0"));
+        cursor.insertText(command + "\n", fmt);
+
+        m_display->setTextCursor(cursor);
+        m_display->verticalScrollBar()->setValue(
+            m_display->verticalScrollBar()->maximum()
+        );
+
+        m_inputBuffer.clear();
+        m_inputAnchor = m_display->document()->characterCount() - 1;
+
+        m_session->sendInput(command);
+    }
+}

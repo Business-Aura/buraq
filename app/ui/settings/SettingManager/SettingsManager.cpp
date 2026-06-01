@@ -23,6 +23,9 @@ void SettingsManager::saveSettings(const UserSettings& settings)
     qsettings.setValue("editorFontSize", settings.editorFontSize);
     qsettings.setValue("shellPath", settings.shellPath);
     qsettings.setValue("shellArgs", settings.shellArgs);
+    qsettings.setValue("buildConfiguration", settings.buildConfiguration);
+    qsettings.setValue("vcpkgToolchainPath", settings.vcpkgToolchainPath);
+    qsettings.setValue("vcpkgTargetTriplet", settings.vcpkgTargetTriplet);
 
     qsettings.endGroup();
 }
@@ -69,6 +72,9 @@ UserSettings SettingsManager::loadSettings()
         settings.editorFontSize = qsettings.value("editorFontSize", QVariant::fromValue(settings.editorFontSize)).toInt();
         settings.shellPath = qsettings.value("shellPath", settings.shellPath).toString();
         settings.shellArgs = qsettings.value("shellArgs", settings.shellArgs).toString();
+        settings.buildConfiguration = qsettings.value("buildConfiguration", settings.buildConfiguration).toString();
+        settings.vcpkgToolchainPath = qsettings.value("vcpkgToolchainPath", settings.vcpkgToolchainPath).toString();
+        settings.vcpkgTargetTriplet = qsettings.value("vcpkgTargetTriplet", settings.vcpkgTargetTriplet).toString();
     }
     catch (...)
     {

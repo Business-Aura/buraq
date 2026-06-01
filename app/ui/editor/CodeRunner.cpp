@@ -1,156 +1,109 @@
-//
-// Created by talik on 5/28/2025.
-//
-
-#include <QIcon>
+// CodeRunner.cpp — Play/Run button implementation
 #include "CodeRunner.h"
-#include <QThread>
-#include "CustomLabel.h"
-#include "Editor.h"
-#include "IconButton.h"
-#include "app_ui/AppUi.h"
+
+#include <QFileInfo>
+#include <QDir>
+#include <QDebug>
+
+#include "editor/Editor.h"
 #include "frameless_window/MainWindow.h"
+#include "terminal/TerminalPanel.h"
+#include "../../database/db_conn.h"
+#include "settings/UserSettings.h"
 
 CodeRunner::CodeRunner(QWidget* parent)
-    : QPushButton("{ }", parent), m_window(parent), m_workerThread(nullptr),
-      m_minion(nullptr)
+    : QPushButton("{ }", parent), m_window(parent)
 {
     setObjectName("CodeRunner");
-
-    // set tooltip for the run buttons
-    setToolTip(
-        "Run code."
-        " & "
-        "Highlighted code.");
-
+    setToolTip("Run Code (C++ / PowerShell / Selection)");
     setupSignals();
-}
-
-// Call this once in your CodeRunner's constructor.
-void CodeRunner::setupWorker()
-{
-    // --- 1. Create and Connect Objects ---
-    m_psClient = new PSClient(this);
-    m_workerThread = new QThread(this);
-    m_minion = new Minion();
-    m_minion->moveToThread(m_workerThread);
-
-    // --- 2. Connect Signals and Slots ---
-
-    // Minion (worker thread) asks psClient (main thread) to execute a script.
-    connect(m_minion, &Minion::runScriptRequested, m_psClient, &PSClient::runScript);
-
-    // psClient (main thread) sends result back to CodeRunner (main thread).
-    connect(m_psClient, &PSClient::scriptResultReceived, this, &CodeRunner::handleTaskResults);
-
-    // Clean up the thread and worker when the thread's event loop finishes.
-    connect(m_workerThread, &QThread::finished, m_minion, &QObject::deleteLater);
-    connect(m_workerThread, &QThread::finished, m_workerThread, &QObject::deleteLater);
-
-    m_workerThread->start();
-}
-
-
-// This function is now much simpler. It just gets the script and signals the worker.
-void CodeRunner::runCode()
-{
-    if (!m_workerThread || !m_workerThread->isRunning())
-    {
-        // If the thread isn't running, set it up.
-        setupWorker();
-    }
-
-    // --- Get the script text from the UI in the main thread ---
-    const auto window_ = dynamic_cast<MainWindow*>(m_window);
-    if (window_ == nullptr || !window_->getEditor())
-    {
-        return; // Safety check
-    }
-
-    QString script = window_->getEditor()->selectedText();
-    if (script.isEmpty())
-    {
-        script = window_->getEditor()->toPlainText();
-    }
-
-    if (script.isEmpty())
-    {
-        return; // Nothing to run
-    }
-
-    const auto cleanedScript = script.replace("\u2029", "\n");
-
-    emit statusUpdate("Running code..");
-
-    // --- Safely trigger the task on the worker thread via a signal ---
-    // The Minion's process slot should be connected to this signal.
-    // We assume Minion has a signal like `startProcessing(QString)`.
-    QMetaObject::invokeMethod(m_minion, "processScript", Qt::QueuedConnection, Q_ARG(QString, cleanedScript));
-}
-
-void CodeRunner::handleTaskResults(const QVariant& result)
-{
-    // if (result.isValid() && result.canConvert<QString>())
-    if (const auto flag = result.canConvert<QString>(); flag && result.isValid())
-    {
-        const auto resultString = result.value<QString>();
-        QString error = "";
-        int statusCode = 0;
-        if (!resultString.isEmpty() && resultString.contains("exception", Qt::CaseInsensitive))
-        {
-            error = resultString;
-            // resultString.clear();
-            statusCode = 1;
-        }
-        emit updateOutputResult(statusCode, resultString, error);
-    }
-    else
-    {
-        emit updateOutputResult(1, "", "Error failed to execute task.");
-    }
-}
-
-void CodeRunner::handleProgress(int i)
-{
-    emit statusUpdate("Executing...");
-}
-
-void CodeRunner::handleWorkerFinished()
-{
-    emit statusUpdate("Ready..");
-
-    m_workerThread = nullptr;
-    m_minion = nullptr;
 }
 
 CodeRunner::~CodeRunner()
 {
-    // smart pointers are deleted automatically
-    // editor pointer should be deleted elsewhere
     m_window = nullptr;
-
-    if (m_workerThread && m_workerThread->isRunning())
-    {
-        m_workerThread->requestInterruption();
-        m_workerThread->quit(); // Ask event loop to quit
-        if (!m_workerThread->wait(5000))
-        {
-            // Wait for max 5 seconds
-            m_workerThread->terminate(); // Force terminate (last resort)
-            m_workerThread->wait(); // Wait for termination
-        }
-    }
 }
 
 void CodeRunner::setupSignals()
 {
-    // Signal to execute the code
-    connect(this, &IconButton::clicked, this, &CodeRunner::runCode);
+    connect(this, &QPushButton::clicked, this, &CodeRunner::runCode);
 
     const auto window = dynamic_cast<MainWindow*>(m_window);
-    // Signal to update status bar in AppUI component for the running process
-    connect(this, &CodeRunner::statusUpdate, window, &MainWindow::processStatusSlot);
+    if (window)
+    {
+        connect(this, &CodeRunner::statusUpdate, window, &MainWindow::processStatusSlot);
+        connect(this, &CodeRunner::updateOutputResult, window, &MainWindow::processResultSlot);
+    }
+}
 
-    // Signal to update the out component in AppUI component for the completed process
-    connect(this, &CodeRunner::updateOutputResult, window, &MainWindow::processResultSlot);
+void CodeRunner::runCode()
+{
+    const auto window_ = dynamic_cast<MainWindow*>(m_window);
+    if (window_ == nullptr || !window_->getEditor())
+    {
+        return;
+    }
+
+    // 1. Save the file first (automatically triggers Save Dialog if file has no path yet)
+    window_->getEditor()->saveFile();
+
+    QString filePath = window_->getEditor()->currentFile();
+    if (filePath.isEmpty())
+    {
+        return; // User cancelled saving
+    }
+
+    QFileInfo fileInfo(filePath);
+    QString ext = fileInfo.suffix().toLower();
+    QString dir = QDir::toNativeSeparators(fileInfo.absolutePath());
+    QString fileName = fileInfo.fileName();
+    QString baseName = fileInfo.baseName();
+
+    // Get the terminal panel
+    TerminalPanel* termPanel = window_->terminalPanel();
+    if (!termPanel)
+    {
+        return;
+    }
+
+    // Retrieve active shell configuration
+    const UserSettings& prefs = window_->getUserPreferences();
+    QString shell = prefs.shellPath.toLower();
+
+    QString cmd;
+
+    // Check if the user has highlighted selection to run (e.g. selection execution)
+    QString selected = window_->getEditor()->selectedText();
+    if (!selected.isEmpty())
+    {
+        cmd = selected.replace("\u2029", "\n");
+    }
+    else if (ext == "cpp" || ext == "cxx" || ext == "cc" || ext == "c")
+    {
+        emit statusUpdate("Selected file is not a script. Use Build menu to compile C/C++.");
+        return;
+    }
+    else if (ext == "ps1")
+    {
+        // PowerShell script execution
+        if (shell.contains("powershell") || shell.contains("pwsh"))
+        {
+            cmd = QString("& \"%1\"").arg(QDir::toNativeSeparators(filePath));
+        }
+        else
+        {
+            cmd = QString("pwsh -File \"%1\"").arg(QDir::toNativeSeparators(filePath));
+        }
+    }
+    else
+    {
+        emit statusUpdate("File type not supported for script execution.");
+        return;
+    }
+
+    if (!cmd.isEmpty())
+    {
+        emit statusUpdate("Running code in terminal...");
+        termPanel->executeCommand(cmd);
+    }
 }

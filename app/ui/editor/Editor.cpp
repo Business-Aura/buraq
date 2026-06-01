@@ -61,6 +61,10 @@ void Editor::openAndParseFile(const QString& filePath, QFile::OpenModeFlag modeF
 {
     if (filePath.isEmpty()) return;
 
+    // Delete/detach old highlighter BEFORE setting the new text
+    // to avoid redundant layout calculations and formatting runs.
+    setHighlighterForFile("");
+
     QFile file(filePath);
     if (!file.open(modeFlag)) {
         emit statusUpdate("Failed to open file: " + filePath);
@@ -81,6 +85,7 @@ void Editor::openAndParseFile(const QString& filePath, QFile::OpenModeFlag modeF
     highlightCurrentLine();
     m_editorMargin->updateState(m_state);
 
+    // Apply the new highlighter
     setHighlighterForFile(filePath);
 
     m_isDirty = false;
@@ -94,6 +99,8 @@ void Editor::setHighlighterForFile(const QString& filePath)
         delete m_highlighter;
         m_highlighter = nullptr;
     }
+
+    if (filePath.isEmpty()) return;
 
     QFileInfo fileInfo(filePath);
     QString extension = fileInfo.suffix();
@@ -142,11 +149,11 @@ void Editor::onTextChanged()
     // The auto-save timer could be started here if desired
 }
 
-void Editor::saveFile()
+bool Editor::saveFile()
 {
     if (m_currentFile.isEmpty()) {
         QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "All Files (*)");
-        if (fileName.isEmpty()) return;
+        if (fileName.isEmpty()) return false;
         m_currentFile = fileName;
         // After saving for the first time, the file type is known, so set the highlighter.
         setHighlighterForFile(m_currentFile);
@@ -155,7 +162,7 @@ void Editor::saveFile()
     QFile file(m_currentFile);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         emit statusUpdate("Could not save file: " + file.errorString());
-        return;
+        return false;
     }
 
     QTextStream out(&file);
@@ -165,6 +172,7 @@ void Editor::saveFile()
     m_isDirty = false;
     database::setLastOpenedFilePath(m_currentFile);
     emit statusUpdate("File saved: " + m_currentFile, 5000);
+    return true;
 }
 
 void Editor::autoSave()

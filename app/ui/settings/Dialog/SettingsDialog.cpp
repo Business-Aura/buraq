@@ -70,6 +70,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     m_tabWidget->addTab(createAppearancePage(), "Appearance");
     m_tabWidget->addTab(createEditorPage(), "Editor");
     m_tabWidget->addTab(createTerminalPage(), "Terminal");
+    m_tabWidget->addTab(createBuildPage(), "Build");
     m_tabWidget->addTab(createAccountPage(), "Account");
 
     mainContentLayout->addWidget(m_tabWidget);
@@ -102,13 +103,25 @@ void SettingsDialog::applyChanges()
     if (m_shellComboBox)
     {
         const int idx = m_shellComboBox->currentIndex();
+#if defined(Q_OS_WIN)
         if (idx == 0)        userPreference.shellPath = "powershell.exe";
         else if (idx == 1)   userPreference.shellPath = "cmd.exe";
-        else if (idx == 2 && m_customShellEdit)
+#elif defined(Q_OS_MAC)
+        if (idx == 0)        userPreference.shellPath = "/bin/zsh";
+        else if (idx == 1)   userPreference.shellPath = "/bin/bash";
+#else
+        if (idx == 0)        userPreference.shellPath = "/bin/bash";
+        else if (idx == 1)   userPreference.shellPath = "/bin/zsh";
+#endif
+        else if (m_customShellEdit)
             userPreference.shellPath = m_customShellEdit->text().trimmed();
     }
     if (m_shellArgsEdit)
         userPreference.shellArgs = m_shellArgsEdit->text().trimmed();
+    if (m_vcpkgToolchainEdit)
+        userPreference.vcpkgToolchainPath = m_vcpkgToolchainEdit->text().trimmed();
+    if (m_vcpkgTripletEdit)
+        userPreference.vcpkgTargetTriplet = m_vcpkgTripletEdit->text().trimmed();
 
     SettingsManager::saveSettings(userPreference);
     themeManager.setAppTheme(userPreference.theme);
@@ -213,6 +226,7 @@ QWidget* SettingsDialog::createTerminalPage()
     QFormLayout* shellLayout = new QFormLayout(shellGroup);
 
     m_shellComboBox = new QComboBox(this);
+#if defined(Q_OS_WIN)
     m_shellComboBox->addItem("PowerShell  (powershell.exe)");
     m_shellComboBox->addItem("Command Prompt  (cmd.exe)");
     m_shellComboBox->addItem("Custom...");
@@ -223,6 +237,27 @@ QWidget* SettingsDialog::createTerminalPage()
     else if (!saved.contains("powershell") && !saved.contains("pwsh"))
                                           m_shellComboBox->setCurrentIndex(2);
     else                                  m_shellComboBox->setCurrentIndex(0);
+#elif defined(Q_OS_MAC)
+    m_shellComboBox->addItem("Zsh  (/bin/zsh)");
+    m_shellComboBox->addItem("Bash  (/bin/bash)");
+    m_shellComboBox->addItem("Custom...");
+
+    // Pre-select based on saved setting
+    const QString saved = userPreference.shellPath.toLower();
+    if (saved.contains("bash"))          m_shellComboBox->setCurrentIndex(1);
+    else if (!saved.contains("zsh"))     m_shellComboBox->setCurrentIndex(2);
+    else                                 m_shellComboBox->setCurrentIndex(0);
+#else
+    m_shellComboBox->addItem("Bash  (/bin/bash)");
+    m_shellComboBox->addItem("Zsh  (/bin/zsh)");
+    m_shellComboBox->addItem("Custom...");
+
+    // Pre-select based on saved setting
+    const QString saved = userPreference.shellPath.toLower();
+    if (saved.contains("zsh"))           m_shellComboBox->setCurrentIndex(1);
+    else if (!saved.contains("bash"))    m_shellComboBox->setCurrentIndex(2);
+    else                                 m_shellComboBox->setCurrentIndex(0);
+#endif
 
     m_customShellEdit = new QLineEdit(this);
     m_customShellEdit->setPlaceholderText("e.g. C:\\Program Files\\Git\\bin\\bash.exe");
@@ -250,6 +285,31 @@ QWidget* SettingsDialog::createTerminalPage()
 
     argsLayout->addRow("Arguments:", m_shellArgsEdit);
     layout->addWidget(argsGroup);
+
+    layout->addStretch();
+    pageWidget->setLayout(layout);
+    return pageWidget;
+}
+
+QWidget* SettingsDialog::createBuildPage()
+{
+    QWidget* pageWidget = new QWidget(this);
+    QVBoxLayout* layout = new QVBoxLayout(pageWidget);
+
+    QGroupBox* cmakeGroup = new QGroupBox("CMake Settings", this);
+    QFormLayout* cmakeLayout = new QFormLayout(cmakeGroup);
+
+    m_vcpkgToolchainEdit = new QLineEdit(this);
+    m_vcpkgToolchainEdit->setPlaceholderText("e.g. C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake");
+    m_vcpkgToolchainEdit->setText(userPreference.vcpkgToolchainPath);
+
+    m_vcpkgTripletEdit = new QLineEdit(this);
+    m_vcpkgTripletEdit->setPlaceholderText("e.g. x64-mingw-dynamic  (leave empty for auto-detection)");
+    m_vcpkgTripletEdit->setText(userPreference.vcpkgTargetTriplet);
+
+    cmakeLayout->addRow("CMake Toolchain File:", m_vcpkgToolchainEdit);
+    cmakeLayout->addRow("Vcpkg Target Triplet:", m_vcpkgTripletEdit);
+    layout->addWidget(cmakeGroup);
 
     layout->addStretch();
     pageWidget->setLayout(layout);
