@@ -3,11 +3,13 @@
 CppHighlighter::CppHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
-    updateTheme(ThemeManager::instance().currentTheme());
-    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, &CppHighlighter::updateTheme);
+    updateTheme(ThemeManager::instance().currentTheme(), false);
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](AppTheme theme) {
+        updateTheme(theme);
+    });
 }
 
-void CppHighlighter::updateTheme(AppTheme theme)
+void CppHighlighter::updateTheme(AppTheme theme, bool triggerRehighlight)
 {
     highlightingRules.clear();
 
@@ -69,7 +71,9 @@ void CppHighlighter::updateTheme(AppTheme theme)
     commentStartExpression = QRegularExpression(QStringLiteral("/\\*"));
     commentEndExpression = QRegularExpression(QStringLiteral("\\*/"));
 
-    rehighlight();
+    if (triggerRehighlight) {
+        rehighlight();
+    }
 }
 
 void CppHighlighter::highlightBlock(const QString &text)

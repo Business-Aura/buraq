@@ -82,6 +82,11 @@ public:
         return m_rightSidePanelLayout;
     }
 
+    QPushButton* getCloseButton() const
+    {
+        return m_closeButton;
+    }
+
 signals:
     void closeWindow();
 

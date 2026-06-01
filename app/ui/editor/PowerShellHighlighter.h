@@ -14,7 +14,7 @@ public:
     PowerShellHighlighter(QTextDocument *parent = nullptr);
 
 public slots:
-    void updateTheme(AppTheme theme);
+    void updateTheme(AppTheme theme, bool triggerRehighlight = true);
 
 protected:
     void highlightBlock(const QString &text) override;

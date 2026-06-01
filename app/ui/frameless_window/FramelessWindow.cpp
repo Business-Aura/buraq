@@ -59,6 +59,11 @@ FramelessWindow::FramelessWindow(QWidget* parent)
     m_toolBar = new ToolBar(toolkitBar);
     m_toolBar->setFixedHeight(35);
     m_toolBar->addFileMenu(); // Add the File menu first
+    m_toolBar->addBuildConfigMenu(userPreferences.buildConfiguration);
+    connect(m_toolBar, &ToolBar::buildConfigChanged, this, [this](const QString &config) {
+        userPreferences.buildConfiguration = config;
+        SettingsManager::saveSettings(userPreferences);
+    });
     if (const auto layout = toolkitBar->layout(); layout)
     {
         layout->addWidget(m_toolBar);
@@ -188,9 +193,11 @@ bool FramelessWindow::nativeEvent(const QByteArray& eventType, void* message, qi
         if (m_Frame->getTitleBar()->rect().contains(localMousePos)) {
             // Check if the cursor is over any of the buttons (use mapFromGlobal for each button)
             QPoint globalPos(x, y);
+            QPushButton* closeBtn = m_Frame->getCloseButton();
             if (m_minimizeButton->rect().contains(m_minimizeButton->mapFromGlobal(globalPos)) ||
                 m_maximizeButton->rect().contains(m_maximizeButton->mapFromGlobal(globalPos)) ||
-                m_settingsButton->rect().contains(m_settingsButton->mapFromGlobal(globalPos))) {
+                m_settingsButton->rect().contains(m_settingsButton->mapFromGlobal(globalPos)) ||
+                (closeBtn && closeBtn->rect().contains(closeBtn->mapFromGlobal(globalPos)))) {
                 // Let the button handle the event
                  return QMainWindow::nativeEvent(eventType, message, result);
             }
@@ -207,6 +214,18 @@ void FramelessWindow::closeWindowSlot()
     if (maybeSave())
     {
         emit closeApp();
+    }
+}
+
+void FramelessWindow::closeEvent(QCloseEvent* event)
+{
+    if (maybeSave())
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
     }
 }
 

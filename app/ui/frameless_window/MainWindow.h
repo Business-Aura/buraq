@@ -23,6 +23,8 @@ public slots:
     void onNewFileTriggered();
     void onOpenFileTriggered();
     void onSaveFileTriggered();
+    void onBuildProjectTriggered();
+    void onRunProjectTriggered();
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -32,12 +34,18 @@ public:
     void onShowOutputButtonClicked() const;
 
     OutputDisplay* outputDisplay() const;
+    [[nodiscard]] TerminalPanel* terminalPanel() const { return m_terminalPanel; }
 
 protected:
     bool maybeSave() override;
     void onApplySettingChanges() override;
 
 private:
+    void buildOrRunProject(bool buildOnly);
+    QString findCMakeExecutable(const QString& checkDir, const QString& buildDir, const QString& baseName) const;
+    QString findMakefileExecutable(const QString& checkDir, const QString& baseName) const;
+    QString detectVcpkgTriplet() const;
+
     TerminalPanel* m_terminalPanel;
     CustomDrawer* m_drawer;
     Editor* m_editor;

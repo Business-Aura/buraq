@@ -14,6 +14,11 @@ ToolBar::ToolBar(const QString& title, QWidget* parent)
 {
     m_customAction = nullptr;
     m_fileMenu = nullptr;
+    m_buildMenu = nullptr;
+    m_buildMenuButton = nullptr;
+    m_configMenu = nullptr;
+    m_configMenuButton = nullptr;
+    m_activeConfig = "Debug";
 
     // --- CHANGE THESE LINES ---
     setMovable(false); // Disable dragging
@@ -135,3 +140,122 @@ void ToolBar::onFileMenuButtonClicked()
 }
 
 // --- END NEW SLOT IMPLEMENTATION ---
+
+void ToolBar::addBuildMenu()
+{
+    if (m_buildMenu)
+    {
+        qDebug() << "Build menu already exists, not adding again.";
+        return;
+    }
+
+    m_buildMenu = new QMenu(this);
+    m_buildMenu->setObjectName("buildMenu");
+
+    QAction* buildAction = new QAction("Build Project", this);
+    QAction* runAction = new QAction("Run Project", this);
+
+    m_buildMenu->addAction(buildAction);
+    m_buildMenu->addAction(runAction);
+
+    m_buildMenuButton = new QPushButton("Build ▾", this);
+    m_buildMenuButton->setObjectName("buildMenuButton");
+    m_buildMenuButton->setFixedSize(75, height());
+
+    addWidget(m_buildMenuButton);
+
+    connect(m_buildMenuButton, &QPushButton::clicked, this, &ToolBar::onBuildMenuButtonClicked);
+    connect(buildAction, &QAction::triggered, this, &ToolBar::onBuildProject);
+    connect(runAction, &QAction::triggered, this, &ToolBar::onRunProject);
+
+    qDebug() << "Build menu successfully added to toolbar.";
+}
+
+void ToolBar::onBuildMenuButtonClicked()
+{
+    QPushButton* button = qobject_cast<QPushButton*>(sender());
+    if (button)
+    {
+        const QPoint pos = button->mapToGlobal(QPoint(0, button->height()));
+        m_buildMenu->popup(pos);
+    }
+}
+
+void ToolBar::onBuildProject()
+{
+    qDebug() << "Build Project action triggered!";
+    emit buildProjectTriggered();
+}
+
+void ToolBar::onRunProject()
+{
+    qDebug() << "Run Project action triggered!";
+    emit runProjectTriggered();
+}
+
+void ToolBar::addBuildConfigMenu(const QString &initialConfig)
+{
+    if (m_configMenu)
+    {
+        qDebug() << "Config menu already exists, not adding again.";
+        return;
+    }
+
+    m_activeConfig = initialConfig.isEmpty() ? "Debug" : initialConfig;
+
+    m_configMenu = new QMenu(this);
+    m_configMenu->setObjectName("buildConfigMenu");
+
+    QAction* debugAction = new QAction("Debug", this);
+    QAction* releaseAction = new QAction("Release", this);
+
+    m_configMenu->addAction(debugAction);
+    m_configMenu->addAction(releaseAction);
+
+    m_configMenuButton = new QPushButton(m_activeConfig + " ▾", this);
+    m_configMenuButton->setObjectName("buildConfigMenuButton");
+    m_configMenuButton->setFixedSize(85, height());
+
+    addWidget(m_configMenuButton);
+
+    connect(m_configMenuButton, &QPushButton::clicked, this, &ToolBar::onBuildConfigMenuButtonClicked);
+    connect(debugAction, &QAction::triggered, this, &ToolBar::onDebugConfigSelected);
+    connect(releaseAction, &QAction::triggered, this, &ToolBar::onReleaseConfigSelected);
+
+    qDebug() << "Build configuration menu successfully added to toolbar.";
+}
+
+QString ToolBar::activeBuildConfig() const
+{
+    return m_activeConfig;
+}
+
+void ToolBar::onBuildConfigMenuButtonClicked()
+{
+    QPushButton* button = qobject_cast<QPushButton*>(sender());
+    if (button)
+    {
+        const QPoint pos = button->mapToGlobal(QPoint(0, button->height()));
+        m_configMenu->popup(pos);
+    }
+}
+
+void ToolBar::onDebugConfigSelected()
+{
+    if (m_activeConfig != "Debug")
+    {
+        m_activeConfig = "Debug";
+        m_configMenuButton->setText(m_activeConfig + " ▾");
+        emit buildConfigChanged(m_activeConfig);
+    }
+}
+
+void ToolBar::onReleaseConfigSelected()
+{
+    if (m_activeConfig != "Release")
+    {
+        m_activeConfig = "Release";
+        m_configMenuButton->setText(m_activeConfig + " ▾");
+        emit buildConfigChanged(m_activeConfig);
+    }
+}

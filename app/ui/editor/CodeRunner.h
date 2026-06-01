@@ -1,54 +1,27 @@
-//
-// Created by talik on 5/28/2025.
-//
-
+// CodeRunner.h — Play/Run button in editor margin
 #ifndef CODERUNNER_H
 #define CODERUNNER_H
 
 #include <QPushButton>
-#include "IconButton.h"
-#include "Minion.h"
-#include "../clients/PSClient/PSClient.h"
-
-class PSClient;
 
 class CodeRunner final : public QPushButton {
-
-Q_OBJECT
+    Q_OBJECT
 
 private slots:
-
-	void handleProgress(int);
-
-	void handleTaskResults(const QVariant &result); // Modified to take QVariant
-
-	void runCode();
-
-	void handleWorkerFinished();
+    void runCode();
 
 signals:
-	void statusUpdate(QString status, int timeout = 10000);
-	void updateOutputResult(int exitCode, const QString &output, const QString &error);
+    void statusUpdate(QString status, int timeout = 10000);
+    void updateOutputResult(int exitCode, const QString &output, const QString &error);
 
 public:
-	explicit CodeRunner(QWidget *parent = nullptr);
-	~CodeRunner() override;
+    explicit CodeRunner(QWidget *parent = nullptr);
+    ~CodeRunner() override;
 
 private:
+    QWidget* m_window;
 
-	// should be managed elsewhere
-	QWidget *m_window;
-
-	// cleanup will be handled by  &QObject::deleteLater
-
-	PSClient* m_psClient{};
-	QThread *m_workerThread;
-	Minion *m_minion;
-
-	void setupWorker();
-
-	void setupSignals();
+    void setupSignals();
 };
-
 
 #endif //CODERUNNER_H

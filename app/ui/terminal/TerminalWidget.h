@@ -25,6 +25,9 @@ public:
     // Change working directory after construction (sends cd command to shell)
     void setWorkingDirectory(const QString& path);
 
+    // Run command directly in the active shell
+    void sendCommand(const QString& command);
+
     [[nodiscard]] bool sessionActive() const;
 
 signals:

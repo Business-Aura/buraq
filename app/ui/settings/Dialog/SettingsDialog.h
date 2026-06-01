@@ -50,11 +50,14 @@ private:
     QWidget* createEditorPage();
     QWidget* createAccountPage();
     QWidget* createTerminalPage();
+    QWidget* createBuildPage();
 
     // Shell setting UI refs (to read back on apply)
     QComboBox* m_shellComboBox    = nullptr;
     QLineEdit* m_shellArgsEdit    = nullptr;
     QLineEdit* m_customShellEdit  = nullptr;
+    QLineEdit* m_vcpkgToolchainEdit = nullptr;
+    QLineEdit* m_vcpkgTripletEdit = nullptr;
 
     // Main UI elements
     QTabWidget* m_tabWidget;

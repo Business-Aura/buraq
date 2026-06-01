@@ -31,6 +31,9 @@ public:
     // Make the Output tab active (called when a run completes)
     void showOutputTab();
 
+    // Run command in active terminal tab (creates tab if none/exited)
+    void executeCommand(const QString& command);
+
     // Returns a pointer to the output display (used by MainWindow)
     OutputDisplay* outputDisplay() const { return m_outputDisplay; }
 

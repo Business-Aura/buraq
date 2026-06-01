@@ -176,3 +176,44 @@ void TerminalPanel::onTerminalTitleChanged(const QString& title)
             m_tabs->setTabText(idx, title);
     }
 }
+
+void TerminalPanel::executeCommand(const QString& command)
+{
+    show(); // Make panel visible
+
+    TerminalWidget* target = nullptr;
+    QWidget* current = m_tabs->currentWidget();
+    if (current && current != m_outputDisplay)
+    {
+        target = qobject_cast<TerminalWidget*>(current);
+    }
+
+    if (!target || !target->sessionActive())
+    {
+        // Try to find any other active terminal tab
+        for (int i = 0; i < m_tabs->count(); ++i)
+        {
+            if (auto* tw = qobject_cast<TerminalWidget*>(m_tabs->widget(i)))
+            {
+                if (tw->sessionActive())
+                {
+                    target = tw;
+                    m_tabs->setCurrentWidget(tw);
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!target || !target->sessionActive())
+    {
+        // No active terminal tab found, create a new one
+        addTerminalTab();
+        target = qobject_cast<TerminalWidget*>(m_tabs->currentWidget());
+    }
+
+    if (target)
+    {
+        target->sendCommand(command);
+    }
+}
