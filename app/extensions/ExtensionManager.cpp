@@ -47,6 +47,8 @@ void ExtensionManager::reloadExtensions()
 {
     m_extensions.clear();
     m_extensionToExtensionIdMap.clear();
+    m_extensionToIconPathMap.clear();
+    m_iconCache.clear();
 
     // 1. Scan built-in extensions directory (e.g. <app_dir>/extensions/)
     scanDirectory(getBuiltInExtensionsDir(), true);
@@ -109,10 +111,30 @@ void ExtensionManager::registerExtensionLanguages(const ExtensionManifest& manif
 {
     for (const auto& lang : manifest.languages)
     {
-        // Map extensions to this extension ID for quick runner lookups
+        // Register icon if specified for language or fallback to manifest icon
+        QString iconPath = lang.icon;
+        if (iconPath.isEmpty())
+        {
+            iconPath = manifest.icon;
+        }
+
+        if (!iconPath.isEmpty())
+        {
+            if (!iconPath.startsWith(":") && !QDir::isAbsolutePath(iconPath))
+            {
+                iconPath = QDir(manifest.directoryPath).filePath(iconPath);
+            }
+        }
+
+        // Map extensions to this extension ID for quick runner lookups and icon lookups
         for (const auto& ext : lang.extensions)
         {
-            m_extensionToExtensionIdMap[ext.toLower()] = manifest.id;
+            const QString lowerExt = ext.toLower();
+            m_extensionToExtensionIdMap[lowerExt] = manifest.id;
+            if (!iconPath.isEmpty())
+            {
+                m_extensionToIconPathMap[lowerExt] = iconPath;
+            }
         }
 
         // Register syntax highlighter with LanguageRegistry
@@ -222,6 +244,90 @@ QString ExtensionManager::getActionForFile(const QString& filePath) const
     }
 
     return m_extensions[extensionId].runner.action;
+}
+
+QIcon ExtensionManager::getIconForFile(const QString& filePath) const
+{
+    if (filePath.isEmpty()) return {};
+
+    const QFileInfo fileInfo(filePath);
+    const QString fileName = fileInfo.fileName().toLower();
+    const QString ext = fileInfo.suffix().toLower();
+
+    // 1. Special project file names
+    if (fileName == "cmakelists.txt" || ext == "cmake")
+    {
+        return getIconForExtension("cmake");
+    }
+    if (fileName == "vcpkg.json" || fileName == "extension.json" || ext == "json")
+    {
+        return getIconForExtension("json");
+    }
+
+    // 2. Query by file extension
+    return getIconForExtension(ext);
+}
+
+QIcon ExtensionManager::getIconForExtension(const QString& extension) const
+{
+    const QString lowerExt = extension.toLower();
+    if (lowerExt.isEmpty()) return {};
+
+    if (m_iconCache.contains(lowerExt))
+    {
+        return m_iconCache.value(lowerExt);
+    }
+
+    // 1. Check mapped icon from installed extensions
+    if (m_extensionToIconPathMap.contains(lowerExt))
+    {
+        const QString iconPath = m_extensionToIconPathMap.value(lowerExt);
+        QIcon icon(iconPath);
+        if (!icon.isNull())
+        {
+            m_iconCache[lowerExt] = icon;
+            return icon;
+        }
+    }
+
+    // 2. Built-in resource fallbacks
+    QString fallbackRes;
+    if (lowerExt == "ps1" || lowerExt == "psm1" || lowerExt == "psd1")
+    {
+        fallbackRes = ":/icons/languages/powershell.svg";
+    }
+    else if (lowerExt == "cpp" || lowerExt == "cxx" || lowerExt == "cc")
+    {
+        fallbackRes = ":/icons/languages/cpp.svg";
+    }
+    else if (lowerExt == "c")
+    {
+        fallbackRes = ":/icons/languages/c.svg";
+    }
+    else if (lowerExt == "h" || lowerExt == "hpp" || lowerExt == "hxx" || lowerExt == "inl")
+    {
+        fallbackRes = ":/icons/languages/h.svg";
+    }
+    else if (lowerExt == "cmake")
+    {
+        fallbackRes = ":/icons/languages/cmake.svg";
+    }
+    else if (lowerExt == "json")
+    {
+        fallbackRes = ":/icons/languages/json.svg";
+    }
+
+    if (!fallbackRes.isEmpty())
+    {
+        QIcon icon(fallbackRes);
+        if (!icon.isNull())
+        {
+            m_iconCache[lowerExt] = icon;
+            return icon;
+        }
+    }
+
+    return {};
 }
 
 static bool copyDirectoryRecursively(const QString& source, const QString& destination)

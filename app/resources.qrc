@@ -57,6 +57,13 @@
         <file alias="settings_svg">icons/dark/svg/settings.svg</file>
         <file alias="workflow_svg">icons/dark/svg/workflow.svg</file>
         <file alias="folder_icon_svg">icons/dark/svg/folder_icon.svg</file>
+
+        <file alias="languages/powershell.svg">icons/languages/powershell.svg</file>
+        <file alias="languages/cpp.svg">icons/languages/cpp.svg</file>
+        <file alias="languages/c.svg">icons/languages/c.svg</file>
+        <file alias="languages/h.svg">icons/languages/h.svg</file>
+        <file alias="languages/cmake.svg">icons/languages/cmake.svg</file>
+        <file alias="languages/json.svg">icons/languages/json.svg</file>
     </qresource>
 
 	<qresource prefix="/">

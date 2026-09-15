@@ -31,7 +31,9 @@
 #include <QVBoxLayout>
 #include <QTreeView>
 #include <QFileSystemModel>
+#include <memory>
 #include "editor/Editor.h"
+#include "BuraqFileIconProvider.h"
 
 class QPushButton;
 class QLabel;
@@ -55,7 +57,7 @@ public:
     };
 
     explicit CustomDrawer(Editor *editor);
-    ~CustomDrawer() override = default;
+    ~CustomDrawer() override;
 
     void toggle();
 
@@ -68,6 +70,7 @@ private:
 
     QTreeView* m_treeView;
     QFileSystemModel* m_fileSystemModel;
+    std::unique_ptr<BuraqFileIconProvider> m_iconProvider;
 
     void setWorkspace(const QString& dirPath, bool saveToDb = true);
 };

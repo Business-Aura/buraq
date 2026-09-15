@@ -38,6 +38,7 @@ set(ITOOLS_UI_SOURCES
         ui/editor/PowerShellHighlighter.cpp
         ui/editor/CppHighlighter.cpp
         ui/CustomDrawer.cpp
+        ui/BuraqFileIconProvider.cpp
         ui/output_display/OutputDisplay.cpp
         ui/CustomLabel.cpp
         ui/terminal/AnsiParser.cpp
@@ -80,6 +81,7 @@ set(ITOOLS_HEADERS
         ui/editor/LanguageProvider.h
         ui/EditorMargin.h
         ui/CustomDrawer.h
+        ui/BuraqFileIconProvider.h
         ui/FilePathLabel.h
         ui/output_display/OutputDisplay.h
         ui/CustomLabel.h

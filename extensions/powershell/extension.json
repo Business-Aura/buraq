@@ -4,12 +4,14 @@
   "version": "1.0.0",
   "description": "PowerShell language support with syntax highlighting and script execution",
   "author": "BizAura",
+  "icon": ":/icons/languages/powershell.svg",
   "languages": [
     {
       "id": "powershell",
       "name": "PowerShell",
       "extensions": ["ps1", "psm1", "psd1"],
-      "highlighter": "powershell"
+      "highlighter": "powershell",
+      "icon": ":/icons/languages/powershell.svg"
     }
   ],
   "runner": {
