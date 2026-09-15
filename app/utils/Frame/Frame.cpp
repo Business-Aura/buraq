@@ -78,6 +78,8 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
         titleBarLayout->addStretch();
         
         m_extraButtons = new QWidget(m_titleBar);
+        m_extraButtons->setObjectName("titleBarExtraButtons");
+        m_extraButtons->setStyleSheet("background: transparent;");
         m_extraButtonsLayout = new QHBoxLayout(m_extraButtons);
         m_extraButtonsLayout->setContentsMargins(0, 0, 0, 0);
         m_extraButtonsLayout->setSpacing(0);

@@ -15,6 +15,10 @@ QMainWindow, QWidget, QDialog {
     font-size: 10pt;
 }
 
+QLabel {
+    background-color: transparent;
+}
+
 /* Selection Colors (for text, list items, etc.) */
 QAbstractItemView {
     selection-background-color: #2196F3; /* Primary Blue for selection */
@@ -206,7 +210,7 @@ QMenu {
     background-color: #FFFFFF; /* White menu background */
     color: #212121;
     border: 1px solid #DCDCDC;
-    min-width: 300px;
+    min-width: 200px;
 }
 QMenu::item {
     padding: 8px 20px 8px 10px;
