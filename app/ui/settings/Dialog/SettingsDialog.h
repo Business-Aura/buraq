@@ -17,6 +17,7 @@ class QListWidget;
 class QStackedWidget;
 class QComboBox;
 class QLineEdit;
+class QTableWidget;
 class SettingsManager;
 class Frame;
 
@@ -51,6 +52,8 @@ private:
     QWidget* createAccountPage();
     QWidget* createTerminalPage();
     QWidget* createBuildPage();
+    QWidget* createExtensionsPage();
+    void populateExtensionsTable();
 
     // Shell setting UI refs (to read back on apply)
     QComboBox* m_shellComboBox    = nullptr;
@@ -58,6 +61,9 @@ private:
     QLineEdit* m_customShellEdit  = nullptr;
     QLineEdit* m_vcpkgToolchainEdit = nullptr;
     QLineEdit* m_vcpkgTripletEdit = nullptr;
+
+    // Extensions UI ref
+    QTableWidget* m_extensionsTable = nullptr;
 
     // Main UI elements
     QTabWidget* m_tabWidget;

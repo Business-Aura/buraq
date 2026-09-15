@@ -1,0 +1,19 @@
+{
+  "id": "buraq.cpp",
+  "name": "C/C++",
+  "version": "1.0.0",
+  "description": "C and C++ language support, syntax highlighting, and build configuration",
+  "author": "BizAura",
+  "languages": [
+    {
+      "id": "cpp",
+      "name": "C/C++",
+      "extensions": ["cpp", "cxx", "cc", "c", "h", "hpp"],
+      "highlighter": "cpp"
+    }
+  ],
+  "runner": {
+    "action": "build_menu",
+    "description": "Compile and run via CMake or Makefile"
+  }
+}

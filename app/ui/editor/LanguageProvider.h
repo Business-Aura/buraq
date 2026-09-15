@@ -21,6 +21,26 @@ public:
 };
 
 // 2. Concrete Implementations
+class GenericLanguageProvider : public ILanguageProvider {
+public:
+    GenericLanguageProvider(QString name, QStringList extensions, std::function<QSyntaxHighlighter*(QTextDocument*)> factory)
+        : m_name(std::move(name)), m_extensions(std::move(extensions)), m_factory(std::move(factory)) {}
+
+    QString getLanguageName() const override { return m_name; }
+    QStringList getSupportedExtensions() const override { return m_extensions; }
+    QSyntaxHighlighter* createHighlighter(QTextDocument* document) const override {
+        if (m_factory) {
+            return m_factory(document);
+        }
+        return nullptr;
+    }
+
+private:
+    QString m_name;
+    QStringList m_extensions;
+    std::function<QSyntaxHighlighter*(QTextDocument*)> m_factory;
+};
+
 class CppLanguageProvider : public ILanguageProvider {
 public:
     QString getLanguageName() const override { return "C++"; }
@@ -48,16 +68,22 @@ public:
         return reg;
     }
 
-    void registerProvider(std::unique_ptr<ILanguageProvider> provider) {
-        QStringList extensions = provider->getSupportedExtensions();
-        auto providerPtr = std::shared_ptr<ILanguageProvider>(provider.release());
+    void registerProvider(std::shared_ptr<ILanguageProvider> provider) {
+        if (!provider) return;
+        const QStringList extensions = provider->getSupportedExtensions();
         for (const QString& ext : extensions) {
-            m_extensionMap[ext.toLower()] = providerPtr;
+            m_extensionMap[ext.toLower()] = provider;
+        }
+    }
+
+    void unregisterProviderForExtensions(const QStringList& extensions) {
+        for (const QString& ext : extensions) {
+            m_extensionMap.remove(ext.toLower());
         }
     }
 
     ILanguageProvider* getProviderForExtension(const QString& extension) const {
-        QString lowerExt = extension.toLower();
+        const QString lowerExt = extension.toLower();
         if (m_extensionMap.contains(lowerExt)) {
             return m_extensionMap[lowerExt].get();
         }
@@ -66,7 +92,7 @@ public:
 
 private:
     LanguageRegistry() {
-        // Register default providers here
+        // Register default built-in providers
         registerProvider(std::make_unique<CppLanguageProvider>());
         registerProvider(std::make_unique<PowerShellLanguageProvider>());
     }

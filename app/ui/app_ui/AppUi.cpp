@@ -31,7 +31,7 @@
 
 #endif
 #include "AppUi.h"
-#include "AppUi.h"
+#include <iostream>
 
 #include <QTimer>
 #include <qcoreapplication.h>
@@ -48,7 +48,7 @@
 #include "database/db_conn.h"
 #include "dialog/VersionUpdateDialog.h"
 #include "frameless_window/MainWindow.h"
-#include "ManagedProcess/ManagedProcess.h"
+#include "extensions/ExtensionManager.h"
 
 AppUi::AppUi(QObject* parent) : QObject(parent)
 {
@@ -92,10 +92,6 @@ AppUi::AppUi(QObject* parent) : QObject(parent)
 
 AppUi::~AppUi()
 {
-    // When the AppUi object is destroyed, m_bridgeProcess's destructor
-    // will be called automatically, terminating the child process.
-    delete m_bridgeProcess;
-
     if (m_workerThread && m_workerThread->isRunning())
     {
         m_workerThread->requestInterruption();
@@ -135,6 +131,9 @@ void AppUi::initAppContext()
     api_context->userDataPath = userDataPath / ".data";
     api_context->userPath = userDataPath;
 
+    // Initialize extension system (discovers built-in and user extensions)
+    ExtensionManager::instance().initialize(api_context.get());
+
     pluginManager = std::make_unique<PluginManager>(api_context.get());
 
     // TBD
@@ -149,16 +148,9 @@ void AppUi::onWindowFullyLoaded()
     // Setup only once when the window is fully loaded.
     setupWorker();
 
-    // initialize Powershell support
     QMetaObject::invokeMethod(m_minion, "addTask", Qt::QueuedConnection,
                               Q_ARG(std::function<QVariant()>, [this]() -> QVariant {
-                                    qDebug() << "  [Task 1] Initialize Powershell support...";
-                                    return initPSLangSupport();
-                                    }));
-
-    QMetaObject::invokeMethod(m_minion, "addTask", Qt::QueuedConnection,
-                              Q_ARG(std::function<QVariant()>, [this]() -> QVariant {
-                                    qDebug() << "  [Task 2] Checking for new Versions...";
+                                    qDebug() << "  [Task 1] Checking for new Versions...";
                                     return verifyApplicationVersion();
                                     }));
 }
@@ -178,27 +170,6 @@ void AppUi::setupWorker()
     connect(m_workerThread, &QThread::finished, m_workerThread, &QObject::deleteLater);
 
     m_workerThread->start();
-}
-
-QVariant AppUi::initPSLangSupport()
-{
-    const std::filesystem::path psLangSupportPath = api_context->searchPath / "PS.Bridge/Buraq.Bridge.exe";
-
-    qDebug() << "PSLang Support: " << psLangSupportPath.string();
-
-    emit updateStatusBar("PSLang Support..", 5000);
-
-    m_bridgeProcess = new ManagedProcess(psLangSupportPath);
-
-    if (!m_bridgeProcess->isRunning())
-    {
-        std::cerr << "Bridge process failed to start." << std::endl;
-        emit updateStatusBar("PowerShell Support Failed.", 5000);
-    }
-
-    emit updateStatusBar("PSLang Support Ready", 30000);
-
-    return {};
 }
 
 QVariant AppUi::verifyApplicationVersion()

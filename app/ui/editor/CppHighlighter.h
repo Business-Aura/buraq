@@ -24,6 +24,7 @@ private:
     {
         QRegularExpression pattern;
         QTextCharFormat format;
+        int matchGroup = 0;
     };
     QVector<HighlightingRule> highlightingRules;
 

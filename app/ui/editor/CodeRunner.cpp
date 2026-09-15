@@ -10,12 +10,13 @@
 #include "terminal/TerminalPanel.h"
 #include "../../database/db_conn.h"
 #include "settings/UserSettings.h"
+#include "extensions/ExtensionManager.h"
 
 CodeRunner::CodeRunner(QWidget* parent)
     : QPushButton("{ }", parent), m_window(parent)
 {
     setObjectName("CodeRunner");
-    setToolTip("Run Code (C++ / PowerShell / Selection)");
+    setToolTip("Run Code (Selection / Script)");
     setupSignals();
 }
 
@@ -78,27 +79,23 @@ void CodeRunner::runCode()
     {
         cmd = selected.replace("\u2029", "\n");
     }
-    else if (ext == "cpp" || ext == "cxx" || ext == "cc" || ext == "c")
-    {
-        emit statusUpdate("Selected file is not a script. Use Build menu to compile C/C++.");
-        return;
-    }
-    else if (ext == "ps1")
-    {
-        // PowerShell script execution
-        if (shell.contains("powershell") || shell.contains("pwsh"))
-        {
-            cmd = QString("& \"%1\"").arg(QDir::toNativeSeparators(filePath));
-        }
-        else
-        {
-            cmd = QString("pwsh -File \"%1\"").arg(QDir::toNativeSeparators(filePath));
-        }
-    }
     else
     {
-        emit statusUpdate("File type not supported for script execution.");
-        return;
+        // Query ExtensionManager for runner command
+        cmd = ExtensionManager::instance().getRunCommand(filePath, shell);
+
+        if (cmd.isEmpty())
+        {
+            const QString action = ExtensionManager::instance().getActionForFile(filePath);
+            if (action == "build_menu")
+            {
+                emit statusUpdate("Selected file is not a script. Use Build menu to compile C/C++.");
+                return;
+            }
+
+            emit statusUpdate("No extension runner installed for file type '." + ext + "'.");
+            return;
+        }
     }
 
     if (!cmd.isEmpty())
