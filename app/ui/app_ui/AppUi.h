@@ -17,7 +17,6 @@ class QMainWindow;
 class QMouseEvent;
 class QThread;
 class EditorMargin;
-class ManagedProcess;
 class PluginManager;
 class ToolBar;
 class MainWindow;
@@ -47,15 +46,10 @@ public:
 private:
     std::unique_ptr<PluginManager> pluginManager;
     std::unique_ptr<buraq::buraq_api> api_context;
-    MainWindow* m_main_window;
-
-    // For running background services
-    ManagedProcess* m_bridgeProcess{};
-
+    MainWindow* m_main_window{};
     QThread *m_workerThread{};
     Minion *m_minion{};
 
-    QVariant initPSLangSupport();
     QVariant verifyApplicationVersion();
     void initAppLayout();
     void initAppContext();

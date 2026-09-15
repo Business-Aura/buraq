@@ -1,0 +1,20 @@
+{
+  "id": "buraq.powershell",
+  "name": "PowerShell",
+  "version": "1.0.0",
+  "description": "PowerShell language support with syntax highlighting and script execution",
+  "author": "BizAura",
+  "languages": [
+    {
+      "id": "powershell",
+      "name": "PowerShell",
+      "extensions": ["ps1", "psm1", "psd1"],
+      "highlighter": "powershell"
+    }
+  ],
+  "runner": {
+    "command": "pwsh -File \"${file}\"",
+    "windowsCommand": "& \"${file}\"",
+    "workingDirectory": "${fileDir}"
+  }
+}

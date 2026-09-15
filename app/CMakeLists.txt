@@ -50,6 +50,7 @@ set(ITOOLS_UTILS_SOURCES
         utils/Minion.cpp
         utils/Config.cpp
         utils/Utils.cpp
+        extensions/ExtensionManager.cpp
 )
 
 set(ITOOLS_RESOURCES
@@ -106,8 +107,8 @@ set(ITOOLS_HEADERS
         ../include/buraq.h
         database/db_conn.cpp
         ../include/buraq.cpp
-        clients/PSClient/PSClient.cpp
-        clients/PSClient/PSClient.h
+        extensions/ExtensionManifest.h
+        extensions/ExtensionManager.h
         ManagedProcess/ManagedProcess.h
         ui/settings/Dialog/SettingsDialog.cpp
         ui/settings/Dialog/SettingsDialog.h
@@ -144,6 +145,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/utils" # For utils headers
         "${CMAKE_SOURCE_DIR}/include" # For PluginInterface.h, IToolsAPI.h
         "${CMAKE_CURRENT_SOURCE_DIR}" # For headers in the current source dir
+        "${CMAKE_CURRENT_SOURCE_DIR}/extensions" # For extension headers
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -205,15 +207,12 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/icons/buraq.ico "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
 
-set(MANAGED_LIBRARY_PUBLISH_DIR "${CMAKE_SOURCE_DIR}/CSharpManaged/bin/Release/net9.0/win-x64/publish")
-
-# After the build is complete, copy the ENTIRE contents of the publish
-# directory to the same directory as your final buraq.exe.
+# Copy built-in extensions to the build directory
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${MANAGED_LIBRARY_PUBLISH_DIR}/" # Source: The entire publish folder
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/PS.Bridge"      # Destination: Where buraq.exe is
-        COMMENT "Copying all self-contained .NET components..."
+        "${CMAKE_SOURCE_DIR}/extensions"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/extensions"
+        COMMENT "Copying built-in extensions..."
 )
 
 if (WIN32)

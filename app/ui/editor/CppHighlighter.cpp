@@ -53,9 +53,11 @@ void CppHighlighter::updateTheme(AppTheme theme, bool triggerRehighlight)
     rule.format = preprocessorFormat;
     highlightingRules.append(rule);
 
-    rule.pattern = QRegularExpression(QStringLiteral("(?<=#include\\s*)<[^>]+>"));
+    rule.pattern = QRegularExpression(QStringLiteral("#include\\s*(<[^>]+>)"));
     rule.format = quotationFormat;
+    rule.matchGroup = 1;
     highlightingRules.append(rule);
+    rule.matchGroup = 0;
 
     quotationFormat.setForeground((theme == Dark) ? QColor("#6A8759") : QColor("#067D17")); // Darcula/IntelliJ Light String
     rule.pattern = QRegularExpression(QStringLiteral("\".*\""));
@@ -82,7 +84,7 @@ void CppHighlighter::highlightBlock(const QString &text)
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
-            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+            setFormat(match.capturedStart(rule.matchGroup), match.capturedLength(rule.matchGroup), rule.format);
         }
     }
     setCurrentBlockState(0);

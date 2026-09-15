@@ -16,6 +16,12 @@
 #include <QCheckBox>
 #include <QLineEdit>
 #include <QGroupBox>
+#include <QTableWidget>
+#include <QHeaderView>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QDesktopServices>
+#include <QUrl>
 #include <qsettings.h>
 
 #include "Config.h"
@@ -23,6 +29,7 @@
 #include "Frame/Frame.h"
 #include "settings/SettingManager/SettingsManager.h"
 #include "settings/UserSettings.h"
+#include "extensions/ExtensionManager.h"
 
 SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent),
@@ -51,7 +58,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 
     // Set object name for styling and resize to a professional size
     setObjectName("SettingsDialog");
-    resize(700, 550);
+    resize(780, 560);
 
     // Load user preferences
     userPreference = SettingsManager::loadSettings();
@@ -71,6 +78,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     m_tabWidget->addTab(createEditorPage(), "Editor");
     m_tabWidget->addTab(createTerminalPage(), "Terminal");
     m_tabWidget->addTab(createBuildPage(), "Build");
+    m_tabWidget->addTab(createExtensionsPage(), "Extensions");
     m_tabWidget->addTab(createAccountPage(), "Account");
 
     mainContentLayout->addWidget(m_tabWidget);
@@ -315,3 +323,156 @@ QWidget* SettingsDialog::createBuildPage()
     pageWidget->setLayout(layout);
     return pageWidget;
 }
+
+QWidget* SettingsDialog::createExtensionsPage()
+{
+    QWidget* pageWidget = new QWidget(this);
+    QVBoxLayout* layout = new QVBoxLayout(pageWidget);
+    layout->setContentsMargins(10, 10, 10, 10);
+    layout->setSpacing(10);
+
+    // Top Action Bar
+    QHBoxLayout* actionLayout = new QHBoxLayout();
+
+    QPushButton* installBtn = new QPushButton("Install from Folder...", this);
+    installBtn->setToolTip("Install an extension folder containing extension.json");
+
+    QPushButton* openDirBtn = new QPushButton("Open Extensions Folder", this);
+    openDirBtn->setToolTip("Open the user extensions directory in system file explorer");
+
+    QPushButton* reloadBtn = new QPushButton("Reload", this);
+    reloadBtn->setToolTip("Reload all extensions from disk");
+
+    actionLayout->addWidget(installBtn);
+    actionLayout->addWidget(openDirBtn);
+    actionLayout->addWidget(reloadBtn);
+    actionLayout->addStretch();
+
+    layout->addLayout(actionLayout);
+
+    // Table of Extensions
+    m_extensionsTable = new QTableWidget(this);
+    m_extensionsTable->setColumnCount(6);
+    m_extensionsTable->setHorizontalHeaderLabels({"Extension", "Version", "Scope", "File Types", "Description", "Action"});
+    m_extensionsTable->horizontalHeader()->setStretchLastSection(false);
+    m_extensionsTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    m_extensionsTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    m_extensionsTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    m_extensionsTable->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    m_extensionsTable->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
+    m_extensionsTable->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
+    m_extensionsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_extensionsTable->setAlternatingRowColors(true);
+    m_extensionsTable->verticalHeader()->setVisible(false);
+
+    layout->addWidget(m_extensionsTable);
+
+    // Connections
+    connect(installBtn, &QPushButton::clicked, this, [this]() {
+        const QString dir = QFileDialog::getExistingDirectory(this, "Select Extension Directory (containing extension.json)", QString(), QFileDialog::ShowDirsOnly);
+        if (!dir.isEmpty()) {
+            QString error;
+            if (ExtensionManager::instance().installFromFolder(dir, error)) {
+                QMessageBox::information(this, "Extension Installed", "Extension installed successfully!");
+                populateExtensionsTable();
+            } else {
+                QMessageBox::warning(this, "Installation Failed", error);
+            }
+        }
+    });
+
+    connect(openDirBtn, &QPushButton::clicked, this, []() {
+        const QString path = ExtensionManager::instance().getUserExtensionsDir();
+        QDir().mkpath(path);
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    });
+
+    connect(reloadBtn, &QPushButton::clicked, this, [this]() {
+        ExtensionManager::instance().reloadExtensions();
+        populateExtensionsTable();
+    });
+
+    connect(&ExtensionManager::instance(), &ExtensionManager::extensionsChanged, this, &SettingsDialog::populateExtensionsTable);
+
+    // Initial populate
+    populateExtensionsTable();
+
+    pageWidget->setLayout(layout);
+    return pageWidget;
+}
+
+void SettingsDialog::populateExtensionsTable()
+{
+    if (!m_extensionsTable) return;
+
+    m_extensionsTable->setRowCount(0);
+    const auto extensions = ExtensionManager::instance().getInstalledExtensions();
+
+    for (int row = 0; row < extensions.size(); ++row) {
+        const auto& ext = extensions[row];
+        m_extensionsTable->insertRow(row);
+
+        // Name & ID
+        auto* nameItem = new QTableWidgetItem(QString("%1\n(%2)").arg(ext.name, ext.id));
+        nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+        m_extensionsTable->setItem(row, 0, nameItem);
+
+        // Version
+        auto* verItem = new QTableWidgetItem(ext.version);
+        verItem->setFlags(verItem->flags() & ~Qt::ItemIsEditable);
+        verItem->setTextAlignment(Qt::AlignCenter);
+        m_extensionsTable->setItem(row, 1, verItem);
+
+        // Scope
+        auto* typeItem = new QTableWidgetItem(ext.isBuiltIn ? "Built-in" : "User");
+        typeItem->setFlags(typeItem->flags() & ~Qt::ItemIsEditable);
+        typeItem->setTextAlignment(Qt::AlignCenter);
+        m_extensionsTable->setItem(row, 2, typeItem);
+
+        // File Types
+        QStringList extList;
+        for (const auto& lang : ext.languages) {
+            for (const auto& fext : lang.extensions) {
+                extList << "." + fext;
+            }
+        }
+        auto* extsItem = new QTableWidgetItem(extList.join(", "));
+        extsItem->setFlags(extsItem->flags() & ~Qt::ItemIsEditable);
+        m_extensionsTable->setItem(row, 3, extsItem);
+
+        // Description
+        auto* descItem = new QTableWidgetItem(ext.description);
+        descItem->setFlags(descItem->flags() & ~Qt::ItemIsEditable);
+        m_extensionsTable->setItem(row, 4, descItem);
+
+        // Actions
+        if (!ext.isBuiltIn) {
+            QPushButton* uninstallBtn = new QPushButton("Uninstall", this);
+            QString extId = ext.id;
+            QString extName = ext.name;
+            connect(uninstallBtn, &QPushButton::clicked, this, [this, extId, extName]() {
+                auto reply = QMessageBox::question(this, "Uninstall Extension",
+                    QString("Are you sure you want to uninstall '%1'?").arg(extName),
+                    QMessageBox::Yes | QMessageBox::No);
+                if (reply == QMessageBox::Yes) {
+                    QString error;
+                    if (ExtensionManager::instance().uninstallExtension(extId, error)) {
+                        populateExtensionsTable();
+                    } else {
+                        QMessageBox::warning(this, "Uninstall Failed", error);
+                    }
+                }
+            });
+            m_extensionsTable->setCellWidget(row, 5, uninstallBtn);
+        } else {
+            auto* lockItem = new QTableWidgetItem("System");
+            lockItem->setFlags(lockItem->flags() & ~Qt::ItemIsEditable);
+            lockItem->setTextAlignment(Qt::AlignCenter);
+            lockItem->setForeground(QBrush(QColor("#888888")));
+            m_extensionsTable->setItem(row, 5, lockItem);
+        }
+    }
+
+    m_extensionsTable->resizeRowsToContents();
+}
+
