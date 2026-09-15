@@ -1,0 +1,90 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: c++20
+
+# Indentation & Alignment
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+AccessModifierOffset: -4
+IndentCaseLabels: true
+IndentPPDirectives: None
+NamespaceIndentation: None
+
+# Column & Line Breaks
+ColumnLimit: 120
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: true
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: false
+  AfterStruct: true
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+# Spacing & Pointers
+PointerAlignment: Left
+ReferenceAlignment: Left
+SpacesBeforeTrailingComments: 1
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+
+# Includes Sorting & Categories
+SortIncludes: CaseSensitive
+IncludeCategories:
+  # 1. Corresponding header
+  - Regex: '^"(ui/)?([A-Za-z0-9_-]+)\.h"'
+    Priority: 1
+  # 2. Qt headers
+  - Regex: '^<Q[A-Za-z0-9]+>'
+    Priority: 2
+  - Regex: '^<Qt[A-Za-z0-9]+>'
+    Priority: 2
+  # 3. Third-party dependencies (Boost, CURL, SQLite, etc.)
+  - Regex: '^<boost/'
+    Priority: 3
+  - Regex: '^<curl/'
+    Priority: 3
+  - Regex: '^<sqlite3'
+    Priority: 3
+  # 4. C++ Standard Library
+  - Regex: '^<[a-z0-9_]+>'
+    Priority: 4
+  # 5. Internal project headers
+  - Regex: '^".*"'
+    Priority: 5
+
+# Qt Specifics
+StatementMacros:
+  - Q_OBJECT
+  - Q_GADGET
+  - Q_PROPERTY
+  - Q_ENUM
+  - Q_ENUM_NS
+  - Q_FLAG
+  - Q_DECLARE_FLAGS
+  - Q_INTERFACES
+  - Q_PLUGIN_METADATA
+
+# Comments & Preprocessor
+ReflowComments: true
+AlignEscapedNewlines: Left
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+...
