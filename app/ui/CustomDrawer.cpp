@@ -48,36 +48,37 @@ CustomDrawer::CustomDrawer(Editor* editor) : QWidget(editor), editor(editor)
 
     // Access the layout via layout() member function after transfer.
     QVBoxLayout* mainVLayout = qobject_cast<QVBoxLayout*>(layout());
-    mainVLayout->setSpacing(8); // Spacing between widgets in the main layout
-    mainVLayout->setContentsMargins(2, 4, 2, 4); // Margins around the main layout's content
+    mainVLayout->setSpacing(6); // Spacing between widgets in the main layout
+    mainVLayout->setContentsMargins(6, 8, 6, 4); // Margins around the main layout's content
 
     // 2. Create a container widget for the header section (label and add button).
     QWidget* headerPanel = new QWidget(this);
 
     // 3. Create a horizontal layout for the header section.
     QHBoxLayout* headerLayout = new QHBoxLayout(headerPanel);
-    headerLayout->setContentsMargins(0, 0, 0, 0); // No extra margins within the header
-    headerLayout->setSpacing(5); // Small spacing between label and button
+    headerLayout->setContentsMargins(4, 0, 4, 0); // Clean margins within the header
+    headerLayout->setSpacing(4); // Small spacing between label and buttons
 
-    // 4. Create the "Workspace" label.
-    workspaceLabel = new QLabel("Workspace", headerPanel);
+    // 4. Create the "EXPLORER" label.
+    workspaceLabel = new QLabel("EXPLORER", headerPanel);
     workspaceLabel->setObjectName("HeaderLabel");
-    // Apply a bold font to make it stand out.
-    workspaceLabel->setFont(QFont("Segoe UI", 10, QFont::Bold));
 
     // 5. Create the "addFolder" button.
-    addFolder = new QPushButton("🗀", this); // Folder icon
+    addFolder = new QPushButton(this);
     addFolder->setObjectName("AddFolder");
-    addFolder->setFixedSize(25, headerPanel->height());
+    addFolder->setIcon(QIcon(":/icons/ui/add_folder.svg"));
+    addFolder->setIconSize(QSize(14, 14));
+    addFolder->setFixedSize(24, 24);
+    addFolder->setToolTip("Open Workspace Folder...");
     connect(addFolder, &QPushButton::clicked, this, &CustomDrawer::onAddFolderButtonClicked);
 
     // 5b. Create the "closeWorkspace" button.
-    closeWorkspace = new QPushButton("✕", this); // Close icon
+    closeWorkspace = new QPushButton(this);
     closeWorkspace->setObjectName("CloseWorkspace");
-    closeWorkspace->setFixedSize(25, headerPanel->height());
-    closeWorkspace->setFlat(true);
-    closeWorkspace->setStyleSheet("QPushButton { color: #888; border: none; font-weight: bold; background: transparent; } "
-                                  "QPushButton:hover { color: #ff5555; }");
+    closeWorkspace->setIcon(QIcon(":/icons/ui/close_folder.svg"));
+    closeWorkspace->setIconSize(QSize(14, 14));
+    closeWorkspace->setFixedSize(24, 24);
+    closeWorkspace->setToolTip("Close Workspace");
     connect(closeWorkspace, &QPushButton::clicked, this, &CustomDrawer::onCloseWorkspaceButtonClicked);
 
     // 6. Add widgets to the header layout.
@@ -89,10 +90,12 @@ CustomDrawer::CustomDrawer(Editor* editor) : QWidget(editor), editor(editor)
     // 7. Add the header panel to the main vertical layout of CustomDrawer.
     mainVLayout->addWidget(headerPanel);
 
-    // 8. Add a separator line for visual distinction below the header.
+    // 8. Add a sleek 1px hairline separator below the header.
     QFrame* separator = new QFrame(this);
-    separator->setFrameShape(QFrame::HLine); // Horizontal line
-    separator->setFrameShadow(QFrame::Sunken); // Gives a sunken 3D effect
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Plain);
+    separator->setFixedHeight(1);
+    separator->setStyleSheet("background-color: #2b2b2b; border: none;");
     mainVLayout->addWidget(separator);
 
     // 9. Initialize the File System Model and Tree View
@@ -104,10 +107,11 @@ CustomDrawer::CustomDrawer(Editor* editor) : QWidget(editor), editor(editor)
 
     m_treeView = new QTreeView(this);
     m_treeView->setHeaderHidden(true); // Hide the top header row
-    
-    m_treeView->setAnimated(false);
-    m_treeView->setIndentation(20);
+    m_treeView->setAnimated(true);
+    m_treeView->setIndentation(16);
     m_treeView->setSortingEnabled(true);
+    m_treeView->setFrameShape(QFrame::NoFrame);
+    m_treeView->setMouseTracking(true);
     // Remove the frame to blend in with the dark theme
     m_treeView->setFrameShape(QFrame::NoFrame);
     
@@ -168,7 +172,7 @@ void CustomDrawer::onCloseWorkspaceButtonClicked()
     
     // Clear the model of the tree view
     m_treeView->setModel(nullptr); 
-    workspaceLabel->setText("Workspace");
+    workspaceLabel->setText("EXPLORER");
     
     if (editor) {
         editor->clear();
@@ -192,9 +196,9 @@ void CustomDrawer::setWorkspace(const QString& dirPath, bool saveToDb)
     QModelIndex rootIndex = m_fileSystemModel->setRootPath(dirPath);
     m_treeView->setRootIndex(rootIndex);
 
-    // Update label to show the folder name instead of just "Workspace"
+    // Update label to show uppercase folder name
     QFileInfo dirInfo(dirPath);
-    workspaceLabel->setText(dirInfo.fileName());
+    workspaceLabel->setText(dirInfo.fileName().toUpper());
     
     emit workspaceChanged(dirPath);
 }

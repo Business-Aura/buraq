@@ -13,9 +13,11 @@
 #include "extensions/ExtensionManager.h"
 
 CodeRunner::CodeRunner(QWidget* parent)
-    : QPushButton("{ }", parent), m_window(parent)
+    : QPushButton(parent), m_window(parent)
 {
     setObjectName("CodeRunner");
+    setIcon(QIcon(":/icons/ui/play.svg"));
+    setIconSize(QSize(16, 16));
     setToolTip("Run Code (Selection / Script)");
     setupSignals();
 }

@@ -57,7 +57,7 @@ FramelessWindow::FramelessWindow(QWidget* parent)
     // Add Tool bar
     const auto toolkitBar = m_Frame->getToolKitBar();
     m_toolBar = new ToolBar(toolkitBar);
-    m_toolBar->setFixedHeight(35);
+    m_toolBar->setFixedHeight(32);
     m_toolBar->addFileMenu(); // Add the File menu first
     m_toolBar->addBuildConfigMenu(userPreferences.buildConfiguration);
     connect(m_toolBar, &ToolBar::buildConfigChanged, this, [this](const QString &config) {
@@ -93,18 +93,25 @@ void FramelessWindow::setupTitleBar()
 {
     const auto titleBar = m_Frame->getTitleBar();
     
-    m_minimizeButton = new QPushButton("—", titleBar);
-    m_maximizeButton = new QPushButton("☐", titleBar);
-    m_settingsButton = new QPushButton("⋮", titleBar);
+    m_minimizeButton = new QPushButton(titleBar);
+    m_maximizeButton = new QPushButton(titleBar);
+    m_settingsButton = new QPushButton(titleBar);
     
     m_minimizeButton->setObjectName("minimizeButton");
     m_maximizeButton->setObjectName("maximizeButton");
     m_settingsButton->setObjectName("settingGearButton");
     m_settingsButton->setToolTip("IDE and Project Settings");
 
-    m_settingsButton->setFixedSize(40, titleBar->height());
-    m_minimizeButton->setFixedSize(40, titleBar->height());
-    m_maximizeButton->setFixedSize(40, titleBar->height());
+    m_minimizeButton->setIcon(QIcon(":/icons/ui/window_minimize.svg"));
+    m_minimizeButton->setIconSize(QSize(11, 11));
+    m_maximizeButton->setIcon(QIcon(":/icons/ui/window_maximize.svg"));
+    m_maximizeButton->setIconSize(QSize(11, 11));
+    m_settingsButton->setIcon(QIcon(":/icons/ui/settings.svg"));
+    m_settingsButton->setIconSize(QSize(14, 14));
+
+    m_settingsButton->setFixedSize(36, titleBar->height());
+    m_minimizeButton->setFixedSize(42, titleBar->height());
+    m_maximizeButton->setFixedSize(42, titleBar->height());
 
     const auto titleBarLayout = m_Frame->getExtraButtonsLayout();
     titleBarLayout->addStretch();
@@ -234,12 +241,12 @@ void FramelessWindow::showMaximizeOrRestoreSlot()
     if (this->isMaximized())
     {
         this->showNormal();
-        m_maximizeButton->setText("☐"); // Maximize symbol
+        m_maximizeButton->setIcon(QIcon(":/icons/ui/window_maximize.svg"));
     }
     else
     {
         this->showMaximized();
-        m_maximizeButton->setText("❐"); // Restore symbol
+        m_maximizeButton->setIcon(QIcon(":/icons/ui/window_restore.svg"));
     }
 }
 

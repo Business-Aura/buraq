@@ -38,11 +38,11 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
         m_titleBar = new QWidget(m_frameContainer);
         m_titlebarEvents = new ToolBarEvent(m_titleBar);
         m_titleBar->installEventFilter(m_titlebarEvents);
-        m_titleBar->setFixedHeight(35); // Set your desired title bar height
+        m_titleBar->setFixedHeight(32);
         m_titleBar->setObjectName("customTitleBar"); // For styling
 
         const auto titleBarLayout = new QHBoxLayout(m_titleBar);
-        titleBarLayout->setContentsMargins(10, 0, 0, 0); // Left margin for the icon
+        titleBarLayout->setContentsMargins(8, 0, 0, 0); // Left margin for the icon
         titleBarLayout->setSpacing(0);
 
         // --- Logo and Title ---
@@ -54,8 +54,8 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
         } else {
             iconButton->setIcon(QIcon(":/icons/buraq.png"));
         }
-        iconButton->setIconSize(QSize(24, 24));
-        iconButton->setFixedSize(35, 35); 
+        iconButton->setIconSize(QSize(18, 18));
+        iconButton->setFixedSize(28, 32); 
         iconButton->setFlat(true);
 
         m_titleLabel = new QLabel(m_titleBar);
@@ -65,7 +65,6 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
         const auto version = new QLabel(m_titleBar);
         version->setObjectName("versionText");
         version->setText("v2.0.0");
-        version->setStyleSheet("margin-left: 10px; color: #888; font-size: 9pt;");
         if (!hasToolBar) {
             version->hide();
             iconButton->hide();
@@ -84,16 +83,18 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
         m_extraButtonsLayout->setSpacing(0);
         titleBarLayout->addWidget(m_extraButtons);
 
-        m_closeButton = new QPushButton("✕", m_titleBar); // X for close
-        m_closeButton->setObjectName("closeButton"); // For specific styling
-        m_closeButton->setFixedSize(m_titleBar->height(), m_titleBar->height());
+        m_closeButton = new QPushButton(m_titleBar);
+        m_closeButton->setObjectName("closeButton");
+        m_closeButton->setIcon(QIcon(":/icons/ui/window_close.svg"));
+        m_closeButton->setIconSize(QSize(11, 11));
+        m_closeButton->setFixedSize(42, 32);
         titleBarLayout->addWidget(m_closeButton);
     }
 
     // Toolkit (topPanel)
     {
         m_topPanel = new QWidget(m_frameContainer);
-        m_topPanel->setFixedHeight(35); // Set your desired title bar height
+        m_topPanel->setFixedHeight(32);
         const auto toolKitLayout = new QHBoxLayout(m_topPanel);
         toolKitLayout->setContentsMargins(0, 0, 0, 0);
         toolKitLayout->setSpacing(0);
@@ -107,7 +108,7 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
         m_leftSidePanelLayout->setContentsMargins(0, 0, 0, 0); // No margins for the main layout
         m_leftSidePanelLayout->setSpacing(0);
 
-        m_leftSidePanel->setFixedWidth(35);
+        m_leftSidePanel->setFixedWidth(42);
         m_leftSidePanel->setObjectName("leftPanel");
     }
 
