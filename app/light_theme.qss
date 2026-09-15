@@ -406,3 +406,42 @@ QPushButton#TerminalCloseButton:hover {
     background-color: #E5533D;
     color: #ffffff;
 }
+
+/* ── Settings Dialog: Floating Elevated Surface & Edges ── */
+QDialog#SettingsDialog {
+    background-color: transparent;
+    background: transparent;
+}
+
+QDialog#SettingsDialog QWidget#Frame {
+    background-color: #F5F5F5;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+}
+
+QDialog#SettingsDialog QWidget#centralDiv {
+    background-color: #F5F5F5;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+QDialog#SettingsDialog QWidget#secondaryTitleBar {
+    background-color: #eaeaea;
+    border-bottom: 1px solid #dcdcdc;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+}
+
+QDialog#SettingsDialog QPushButton#closeButton {
+    border-top-right-radius: 7px;
+}
+
+QDialog#SettingsDialog QWidget#secondaryTitleBar QLabel,
+QDialog#SettingsDialog QLabel#titleText {
+    background-color: transparent;
+    background: transparent;
+    color: #212121;
+    font-size: 9.5pt;
+    font-weight: 600;
+}
+

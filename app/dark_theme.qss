@@ -475,6 +475,15 @@ QDialog#SettingsDialog QPushButton#closeButton {
     border-top-right-radius: 7px;
 }
 
+QDialog#SettingsDialog QWidget#secondaryTitleBar QLabel,
+QDialog#SettingsDialog QLabel#titleText {
+    background-color: transparent;
+    background: transparent;
+    color: #cccccc;
+    font-size: 9.5pt;
+    font-weight: 600;
+}
+
 /* Tab Widget & Bar Flat Styling (Continuous Edge-to-Edge Baseline) */
 QTabWidget::pane,
 QTabWidget#SettingsTabWidget::pane {

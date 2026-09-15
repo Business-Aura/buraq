@@ -46,8 +46,10 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     m_Frame->setObjectName("SettingsDialogFrame");
     m_Frame->setAttribute(Qt::WA_TranslucentBackground);
     m_Frame->getTitleLabel()->setText("Settings");
+    m_Frame->getTitleLabel()->setStyleSheet("background: transparent; color: #cccccc; font-weight: 600;");
 
-    // Hide side panels and bottom panel in SettingsDialog to reclaim space
+    // Hide toolkit bar, side panels, and bottom panel in SettingsDialog to reclaim space
+    m_Frame->getToolKitBar()->hide();
     m_Frame->getLeftSidePanelLayout()->parentWidget()->hide();
     m_Frame->getRightSidePanelLayout()->parentWidget()->hide();
     m_Frame->getBottomPanelLayout()->parentWidget()->hide();
