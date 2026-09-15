@@ -446,39 +446,142 @@ QPushButton#PrimaryButton:pressed {
     background-color: #0066aa;
 }
 
-/* Settings Dialog Visual Differentiation */
+/* ── Settings Dialog: Floating Elevated Surface & Edges ── */
+QDialog#SettingsDialog {
+    background-color: transparent;
+    background: transparent;
+}
+
 QDialog#SettingsDialog QWidget#Frame {
-    border: 1px solid #00BCD4;
     background-color: #252526;
+    border: 1px solid #424245;
+    border-radius: 8px;
+}
+
+QDialog#SettingsDialog QWidget#centralDiv {
+    background-color: #252526;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
 }
 
 QDialog#SettingsDialog QWidget#secondaryTitleBar {
-    background-color: #1e1e1e;
+    background-color: #202022;
     border-bottom: 1px solid #333333;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
 }
 
-/* Tab Widget & Bar Flat Styling */
-QTabWidget::pane {
-    border: 1px solid #333333;
+QDialog#SettingsDialog QPushButton#closeButton {
+    border-top-right-radius: 7px;
+}
+
+/* Tab Widget & Bar Flat Styling (Continuous Edge-to-Edge Baseline) */
+QTabWidget::pane,
+QTabWidget#SettingsTabWidget::pane {
+    border: none;
+    border-top: 1px solid #383838;
     background-color: #252526;
+    top: -1px;
+}
+
+QTabWidget::tab-bar,
+QTabWidget#SettingsTabWidget::tab-bar {
+    left: 20px;
+    alignment: left;
+}
+
+QTabBar {
+    background-color: transparent;
+    background: transparent;
+    qproperty-drawBase: 0;
 }
 
 QTabBar::tab {
-    background-color: #1e1e1e;
-    color: #999999;
-    padding: 7px 16px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    margin-right: 2px;
+    background-color: transparent;
+    background: transparent;
+    color: #888888;
+    font-size: 9.5pt;
+    font-weight: 500;
+    padding: 8px 16px 10px 16px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-right: 4px;
 }
 
-QTabBar::tab:selected, QTabBar::tab:hover {
-    background-color: #252526;
-    color: #ffffff;
+QTabBar::tab:hover {
+    color: #cccccc;
+    background-color: rgba(255, 255, 255, 0.04);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 
 QTabBar::tab:selected {
+    color: #ffffff;
+    font-weight: 600;
+    background-color: transparent;
     border-bottom: 2px solid #00BCD4;
+}
+
+/* Settings Form Controls */
+QDialog#SettingsDialog QGroupBox {
+    color: #e0e0e0;
+    font-size: 9.5pt;
+    font-weight: 600;
+    border: 1px solid #383838;
+    border-radius: 6px;
+    margin-top: 12px;
+    padding: 16px 12px 12px 12px;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+QDialog#SettingsDialog QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 10px;
+    top: 4px;
+    padding: 0 6px;
+    color: #00BCD4;
+    background-color: #252526;
+}
+
+QDialog#SettingsDialog QComboBox,
+QDialog#SettingsDialog QSpinBox,
+QDialog#SettingsDialog QLineEdit {
+    background-color: #1e1e1e;
+    color: #cccccc;
+    border: 1px solid #3c3c3c;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 9.5pt;
+    selection-background-color: #094771;
+}
+
+QDialog#SettingsDialog QComboBox:hover,
+QDialog#SettingsDialog QSpinBox:hover,
+QDialog#SettingsDialog QLineEdit:hover {
+    border-color: #555555;
+}
+
+QDialog#SettingsDialog QComboBox:focus,
+QDialog#SettingsDialog QSpinBox:focus,
+QDialog#SettingsDialog QLineEdit:focus {
+    border-color: #00BCD4;
+}
+
+QDialog#SettingsDialog QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 20px;
+    border-left: none;
+}
+
+QDialog#SettingsDialog QComboBox QAbstractItemView {
+    background-color: #252526;
+    color: #cccccc;
+    border: 1px solid #3c3c3c;
+    selection-background-color: #094771;
+    selection-color: #ffffff;
+    padding: 4px;
 }
 
 /* ── Integrated Terminal ── */
