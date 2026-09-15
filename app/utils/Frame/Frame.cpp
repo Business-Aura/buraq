@@ -60,6 +60,7 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
 
         m_titleLabel = new QLabel(m_titleBar);
         m_titleLabel->setObjectName("titleText");
+        m_titleLabel->setStyleSheet("background: transparent;");
         m_titleLabel->setText("Buraq"); // Default title
 
         const auto version = new QLabel(m_titleBar);
@@ -101,6 +102,9 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
         toolKitLayout->setContentsMargins(0, 0, 0, 0);
         toolKitLayout->setSpacing(0);
         toolKitLayout->setObjectName("topPanel");
+        if (!hasToolBar) {
+            m_topPanel->hide();
+        }
     }
 
     // left side panel
@@ -164,6 +168,7 @@ Frame::Frame(QWidget* parent, const bool hasToolBar, const QSize minSize)
     else
     {
         m_titleBar->setObjectName("secondaryTitleBar");
+        m_topPanel->hide();
         mainGridLayout->addWidget(m_titleBar, 0, 0, 1, 1); // Row 0, Col 0
         mainGridLayout->addWidget(middleContentContainer, 1, 0, 1, 1); // Row 1, Col 0
         mainGridLayout->addWidget(m_bottomPanel, 2, 0, 1, 1); // Row 2, Col 0
