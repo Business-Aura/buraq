@@ -36,7 +36,34 @@ Follow Conventional Commits:
 - **Example**: `feat(terminal): add ANSI escape code parsing support`
 
 ## 3. Pull Request Requirements
-- PR titles must clearly describe the change.
-- Verify that code compiles locally (`./build.sh` or `cmake --build build`) before opening a PR.
+- PR titles must clearly describe the change following Conventional Commits.
+- Verify that code compiles locally before opening a PR.
 - Never force-push to `main` or `develop`.
 - Ensure all CI checks pass in `.github/workflows/test-build.yml` before requesting review.
+
+## 4. Creating Merge Requests / Pull Requests
+When asked to create an MR/PR or when completing a branch workflow:
+1. **Push Branch**: Ensure the current branch is pushed to origin:
+   ```powershell
+   git push -u origin <branch-name>
+   ```
+2. **Determine Target**:
+   - Features, fixes, and chores (`feature/*`, `fix/*`, `chore/*`) MUST target `develop`.
+   - Production releases (`release/*` or `develop`) target `main`.
+3. **Automate PR Creation via API**:
+   Do not ask the user to manually create the PR in the browser. Query Git Credential Manager for the GitHub token and call the GitHub REST API:
+   ```powershell
+   $creds = "protocol=https`nhost=github.com`n`n" | git credential fill
+   $token = ($creds | Select-String "password=(.*)").Matches.Groups[1].Value
+   $body = @{
+       title = "<Conventional Commit Title>"
+       head  = "<branch-name>"
+       base  = "develop"
+       body  = "<Markdown PR Summary>"
+   } | ConvertTo-Json
+   $headers = @{ "Authorization" = "Bearer $token"; "Accept" = "application/vnd.github+json"; "User-Agent" = "Buraq-PR-Agent" }
+   $response = Invoke-RestMethod -Uri "https://api.github.com/repos/Business-Aura/buraq/pulls" -Method Post -Headers $headers -Body $body -ContentType "application/json"
+   ```
+   Or invoke `.agents/skills/create-mr/scripts/create-mr.ps1`.
+4. **Report Link**: Output the resulting PR URL (`$response.html_url`) prominently to the user.
+

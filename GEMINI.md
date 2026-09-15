@@ -122,7 +122,7 @@ The compiled executable and dependencies reside in `build/build/`:
 
 ---
 
-## 4. Gitflow & Contribution Rules
+## 4. Gitflow, Contribution & MR/PR Creation Rules
 
 The repository strictly enforces a Gitflow branching model:
 
@@ -130,9 +130,17 @@ The repository strictly enforces a Gitflow branching model:
    - `main`: Production release branch. Contains tagged, deployable releases. **Direct commits and non-develop PRs are blocked by CI (`validate-merge.yml`).**
    - `develop`: Primary integration branch. All active development converges here.
    - `feature/*`, `fix/*`, `chore/*`: Feature and fix branches. Always branched from `develop` and merged back into `develop`.
-2. **Pull Requests**:
-   - PRs must target `develop`.
+2. **Pull Requests / Merge Requests**:
+   - **Always target `develop`** for features, fixes, and chores.
    - PRs targeting `main` will automatically fail CI unless the head branch is `develop`.
+   - **Automated MR/PR Creation**: When asked to create an MR/PR or upon completing a feature branch, automate the creation directly using Git Credential Manager and the GitHub REST API or the bundled skill script:
+     ```powershell
+     & .agents/skills/create-mr/scripts/create-mr.ps1 `
+       -Title "<Conventional Commit Title>" `
+       -Base "develop" `
+       -Body "<Markdown Description>"
+     ```
+     Never ask the user to manually open the browser to create PRs. Always return the generated GitHub PR URL.
 3. **Commit Messages**:
    - Use Conventional Commits format: `<type>(<scope>): <short description>`
    - Types: `feat`, `fix`, `chore`, `refactor`, `docs`, `style`, `test`, `ci`.
@@ -170,18 +178,21 @@ The repository strictly enforces a Gitflow branching model:
 ```
 buraq/
 ├── .agents/
-│   └── rules/                  # Antigravity agent workspace rules
+│   ├── rules/                  # Antigravity agent workspace rules
+│   └── skills/                 # Antigravity workspace skills (e.g. create-mr)
 ├── .github/
 │   └── workflows/              # GitHub Actions CI/CD pipelines
 ├── app/                        # Main C++ Qt application
-│   ├── clients/                # Network and bridge clients
+│   ├── extensions/             # ExtensionManager and manifest parser
+│   ├── clients/                # Network and version clients
 │   ├── database/               # Local SQLite database integration
 │   ├── icons/                  # Application icons (.ico, .png, .svg)
 │   ├── res/                    # Win32 resources (.rc)
-│   ├── ui/                     # UI components (editor, terminal, window)
+│   ├── ui/                     # UI components (editor, terminal, window, settings)
 │   │   ├── app_ui/             # AppUi controller and layout orchestrator
 │   │   ├── editor/             # Editor widget, highlighters, line numbers
 │   │   ├── frameless_window/   # Custom titlebar and border handling
+│   │   ├── settings/           # Settings dialog (with Extensions management tab)
 │   │   ├── terminal/           # Terminal session and ANSI renderer
 │   │   └── Filters/            # Theme manager and event filters
 │   ├── utils/                  # Common utilities and configuration helpers
@@ -189,10 +200,7 @@ buraq/
 │   ├── light_theme.qss         # Light theme stylesheet
 │   ├── resources.qrc           # Qt embedded resources
 │   └── main.cpp                # Application entry point
-├── CSharpManaged/              # .NET 9.0 Managed PowerShell bridge
-│   ├── Buraq.Bridge.cs         # TCP listener server
-│   ├── Buraq.PowerShell.cs     # PowerShell host and runspace manager
-│   └── build.sh                # Publish script for bridge
+├── extensions/                 # Built-in declarative extensions (powershell, cpp)
 ├── exts/                       # External plugins / modular extensions
 ├── include/                    # Public headers (PluginInterface.h, version.h)
 ├── .clang-format               # C++ code formatting configuration
