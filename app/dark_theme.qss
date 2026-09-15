@@ -17,6 +17,10 @@ QWidget, QDialog {
     font-size: 9.5pt;
 }
 
+QLabel {
+    background-color: transparent;
+}
+
 /* Outer Window Frame */
 QWidget#Frame {
     background-color: #181818;
@@ -33,6 +37,15 @@ QWidget#customTitleBar,
 QWidget#secondaryTitleBar {
     background-color: #181818;
     border-bottom: 1px solid #262626;
+}
+
+QWidget#customTitleBar QLabel,
+QWidget#customTitleBar QWidget,
+QWidget#secondaryTitleBar QLabel,
+QWidget#secondaryTitleBar QWidget,
+QWidget#titleBarExtraButtons {
+    background-color: transparent;
+    background: transparent;
 }
 
 QWidget#topPanel {
@@ -154,8 +167,10 @@ QPushButton#outputConsoleButton[active="true"] {
 /* Window Control Buttons (Title Bar) */
 QPushButton#minimizeButton,
 QPushButton#maximizeButton,
-QPushButton#settingGearButton {
+QPushButton#settingGearButton,
+QPushButton#titleBarLogoButton {
     background-color: transparent;
+    background: transparent;
     border: none;
     border-radius: 0px;
     padding: 0px;
@@ -176,6 +191,7 @@ QPushButton#settingGearButton:pressed {
 
 QPushButton#closeButton {
     background-color: transparent;
+    background: transparent;
     border: none;
     border-radius: 0px;
     padding: 0px;
@@ -194,6 +210,8 @@ QPushButton#closeButton:pressed {
 
 /* Title Bar Typography */
 QLabel#titleText {
+    background-color: transparent;
+    background: transparent;
     color: #cccccc;
     font-size: 9.5pt;
     font-weight: 600;
@@ -201,11 +219,12 @@ QLabel#titleText {
 }
 
 QLabel#versionText {
+    background-color: transparent;
+    background: transparent;
     color: #888888;
     font-size: 8pt;
-    padding: 1px 6px;
-    background-color: #222222;
-    border-radius: 3px;
+    padding: 0px 4px;
+    border-radius: 0px;
     margin-left: 6px;
 }
 
@@ -272,10 +291,11 @@ QMenu {
     border: 1px solid #3c3c3c;
     border-radius: 5px;
     padding: 4px 0px;
+    min-width: 200px;
 }
 
 QMenu::item {
-    padding: 5px 24px 5px 12px;
+    padding: 6px 24px 6px 12px;
     border-radius: 3px;
     margin: 1px 4px;
 }
