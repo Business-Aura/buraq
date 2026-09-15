@@ -5,6 +5,7 @@
 #include <QString>
 #include <QMap>
 #include <QList>
+#include <QIcon>
 #include <memory>
 #include <optional>
 
@@ -31,6 +32,9 @@ public:
     [[nodiscard]] QString getRunCommand(const QString& filePath, const QString& activeShell) const;
     [[nodiscard]] QString getActionForFile(const QString& filePath) const;
 
+    [[nodiscard]] QIcon getIconForFile(const QString& filePath) const;
+    [[nodiscard]] QIcon getIconForExtension(const QString& extension) const;
+
     bool installFromFolder(const QString& sourceFolderPath, QString& errorMessage);
     bool uninstallExtension(const QString& extensionId, QString& errorMessage);
 
@@ -54,6 +58,8 @@ private:
     buraq::buraq_api* m_apiContext{nullptr};
     QMap<QString, ExtensionManifest> m_extensions;
     QMap<QString, QString> m_extensionToExtensionIdMap; // Maps file extension (e.g. "ps1") -> extension id
+    QMap<QString, QString> m_extensionToIconPathMap;    // Maps file extension (e.g. "ps1") -> icon resource/path
+    mutable QMap<QString, QIcon> m_iconCache;
 };
 
 #endif // EXTENSION_MANAGER_H

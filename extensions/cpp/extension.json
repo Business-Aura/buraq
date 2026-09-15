@@ -4,12 +4,28 @@
   "version": "1.0.0",
   "description": "C and C++ language support, syntax highlighting, and build configuration",
   "author": "BizAura",
+  "icon": ":/icons/languages/cpp.svg",
   "languages": [
     {
       "id": "cpp",
-      "name": "C/C++",
-      "extensions": ["cpp", "cxx", "cc", "c", "h", "hpp"],
-      "highlighter": "cpp"
+      "name": "C++ Source",
+      "extensions": ["cpp", "cxx", "cc"],
+      "highlighter": "cpp",
+      "icon": ":/icons/languages/cpp.svg"
+    },
+    {
+      "id": "c",
+      "name": "C Source",
+      "extensions": ["c"],
+      "highlighter": "cpp",
+      "icon": ":/icons/languages/c.svg"
+    },
+    {
+      "id": "header",
+      "name": "C/C++ Header",
+      "extensions": ["h", "hpp", "hxx", "inl"],
+      "highlighter": "cpp",
+      "icon": ":/icons/languages/h.svg"
     }
   ],
   "runner": {

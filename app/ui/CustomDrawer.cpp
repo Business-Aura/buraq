@@ -25,6 +25,7 @@
 //
 
 #include "CustomDrawer.h"
+#include "BuraqFileIconProvider.h"
 #include <QGridLayout>
 #include <QLabel>
 #include <QFileDialog>
@@ -96,6 +97,8 @@ CustomDrawer::CustomDrawer(Editor* editor) : QWidget(editor), editor(editor)
 
     // 9. Initialize the File System Model and Tree View
     m_fileSystemModel = new QFileSystemModel(this);
+    m_iconProvider = std::make_unique<BuraqFileIconProvider>();
+    m_fileSystemModel->setIconProvider(m_iconProvider.get());
     m_fileSystemModel->setRootPath(""); // Default to empty
     m_fileSystemModel->setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs);
 
@@ -132,6 +135,8 @@ CustomDrawer::CustomDrawer(Editor* editor) : QWidget(editor), editor(editor)
     // drawer is collapsed by default.
     // show(); // Uncomment if you want it visible by default
 }
+
+CustomDrawer::~CustomDrawer() = default;
 
 void CustomDrawer::toggle()
 {

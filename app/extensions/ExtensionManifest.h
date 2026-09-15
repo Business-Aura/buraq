@@ -15,6 +15,7 @@ struct ExtensionLanguage
     QString name;
     QStringList extensions;
     QString highlighter; // e.g. "powershell", "cpp", "generic"
+    QString icon;        // e.g. ":/icons/languages/powershell.svg"
 };
 
 struct ExtensionRunner
@@ -33,6 +34,7 @@ struct ExtensionManifest
     QString version;
     QString description;
     QString author;
+    QString icon;
     QList<ExtensionLanguage> languages;
     ExtensionRunner runner;
     QString directoryPath;
@@ -55,6 +57,7 @@ struct ExtensionManifest
         manifest.version = obj.value("version").toString("1.0.0");
         manifest.description = obj.value("description").toString();
         manifest.author = obj.value("author").toString("Unknown");
+        manifest.icon = obj.value("icon").toString();
         manifest.directoryPath = dirPath;
         manifest.isBuiltIn = isBuiltIn;
         manifest.isEnabled = true;
@@ -75,6 +78,7 @@ struct ExtensionManifest
                 lang.id = langObj.value("id").toString();
                 lang.name = langObj.value("name").toString(lang.id);
                 lang.highlighter = langObj.value("highlighter").toString();
+                lang.icon = langObj.value("icon").toString();
 
                 const QJsonArray extArr = langObj.value("extensions").toArray();
                 for (const auto& extVal : extArr)
