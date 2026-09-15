@@ -81,7 +81,7 @@ void ToolBar::addFileMenu()
     // Create a QPushButton to act as the menu trigger
     m_fileMenuButton = new QPushButton("☰", this);
     m_fileMenuButton->setObjectName("fileMenuButton");
-    m_fileMenuButton->setFixedSize(40, height());
+    m_fileMenuButton->setFixedSize(36, 26);
 
     // Add the button to the toolbar. By default, it will be on the left if added first.
     addWidget(m_fileMenuButton);
@@ -160,7 +160,7 @@ void ToolBar::addBuildMenu()
 
     m_buildMenuButton = new QPushButton("Build ▾", this);
     m_buildMenuButton->setObjectName("buildMenuButton");
-    m_buildMenuButton->setFixedSize(75, height());
+    m_buildMenuButton->setFixedSize(70, 26);
 
     addWidget(m_buildMenuButton);
 
@@ -214,7 +214,7 @@ void ToolBar::addBuildConfigMenu(const QString &initialConfig)
 
     m_configMenuButton = new QPushButton(m_activeConfig + " ▾", this);
     m_configMenuButton->setObjectName("buildConfigMenuButton");
-    m_configMenuButton->setFixedSize(85, height());
+    m_configMenuButton->setFixedSize(80, 26);
 
     addWidget(m_configMenuButton);
 

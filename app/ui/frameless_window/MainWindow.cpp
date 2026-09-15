@@ -41,15 +41,21 @@ MainWindow::MainWindow(QWidget* parent) : FramelessWindow(parent)
     // 2. LEFT CONTROL PANEL: A vertical layout for the top and bottom buttons.
     const auto leftPanelLayout = m_Frame->getLeftSidePanelLayout();
 
-    m_folderButton = new QPushButton("🗀", contentArea);
+    m_folderButton = new QPushButton(contentArea);
     m_folderButton->setObjectName("folderButton");
-    m_folderButton->setFixedSize(35, 35);
+    m_folderButton->setIcon(QIcon(":/icons/folder_icon_svg"));
+    m_folderButton->setIconSize(QSize(20, 20));
+    m_folderButton->setFixedSize(42, 42);
+    m_folderButton->setToolTip("Explorer");
 
     connect(m_folderButton, &QPushButton::clicked, this, &MainWindow::updateDrawer);
 
-    m_outputButton = new QPushButton("❯_", contentArea);
+    m_outputButton = new QPushButton(contentArea);
     m_outputButton->setObjectName("outputConsoleButton");
-    m_outputButton->setFixedSize(35, 35);
+    m_outputButton->setIcon(QIcon(":/icons/ui/terminal.svg"));
+    m_outputButton->setIconSize(QSize(20, 20));
+    m_outputButton->setFixedSize(42, 42);
+    m_outputButton->setToolTip("Terminal (Ctrl+`)");
 
     connect(m_outputButton, &QPushButton::clicked, this, &MainWindow::onShowOutputButtonClicked);
 

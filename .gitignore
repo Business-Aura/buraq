@@ -72,3 +72,6 @@ cmake-build-debug-visual-studio/
 cmake-build-release-visual-studio/
 
 .PVS-Studio
+build-debug/
+app/build-debug/
+cmake-build-debug-mingw/

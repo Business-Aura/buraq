@@ -78,4 +78,8 @@ void LineNumberAreaWidget::paintEvent(QPaintEvent *event) {
 		bottom = top + qRound(editor->blockBoundingRect(block).height());
 		++blockNumber;
 	}
+
+	// Draw 1px hairline divider on the right edge of the line number area
+	painter.setPen(QColor("#282828"));
+	painter.drawLine(width() - 1, event->rect().top(), width() - 1, event->rect().bottom());
 }

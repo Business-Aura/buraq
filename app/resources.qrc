@@ -64,6 +64,18 @@
         <file alias="languages/h.svg">icons/languages/h.svg</file>
         <file alias="languages/cmake.svg">icons/languages/cmake.svg</file>
         <file alias="languages/json.svg">icons/languages/json.svg</file>
+
+        <file alias="ui/window_minimize.svg">icons/ui/window_minimize.svg</file>
+        <file alias="ui/window_maximize.svg">icons/ui/window_maximize.svg</file>
+        <file alias="ui/window_restore.svg">icons/ui/window_restore.svg</file>
+        <file alias="ui/window_close.svg">icons/ui/window_close.svg</file>
+        <file alias="ui/terminal.svg">icons/ui/terminal.svg</file>
+        <file alias="ui/play.svg">icons/ui/play.svg</file>
+        <file alias="ui/chevron_right.svg">icons/ui/chevron_right.svg</file>
+        <file alias="ui/chevron_down.svg">icons/ui/chevron_down.svg</file>
+        <file alias="ui/add_folder.svg">icons/ui/add_folder.svg</file>
+        <file alias="ui/close_folder.svg">icons/ui/close_folder.svg</file>
+        <file alias="ui/settings.svg">icons/ui/settings.svg</file>
     </qresource>
 
 	<qresource prefix="/">
