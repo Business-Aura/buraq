@@ -23,6 +23,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <qsettings.h>
+#include <QGraphicsDropShadowEffect>
 
 #include "Config.h"
 #include "Filters/Toolbar/ToolBarEvent.h"
@@ -42,6 +43,8 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     setAttribute(Qt::WA_TranslucentBackground);
 
     m_Frame = new Frame(this, false); // Create the frame, no toolbar needed
+    m_Frame->setObjectName("SettingsDialogFrame");
+    m_Frame->setAttribute(Qt::WA_TranslucentBackground);
     m_Frame->getTitleLabel()->setText("Settings");
 
     // Hide side panels and bottom panel in SettingsDialog to reclaim space
@@ -52,13 +55,20 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     // --- Main Dialog Layout ---
     // The dialog itself needs a layout. We will add our Frame to this layout.
     QVBoxLayout* dialogLayout = new QVBoxLayout(this);
-    dialogLayout->setContentsMargins(0, 0, 0, 0);
+    dialogLayout->setContentsMargins(14, 14, 14, 14); // Margins for elevation drop shadow
     dialogLayout->addWidget(m_Frame); // Add the frame to the dialog's layout
     setLayout(dialogLayout);
 
     // Set object name for styling and resize to a professional size
     setObjectName("SettingsDialog");
-    resize(780, 560);
+    resize(808, 588); // 780x560 content + 28px margins for drop shadow
+
+    // Drop shadow effect for elevation and edge differentiation
+    auto* shadowEffect = new QGraphicsDropShadowEffect(this);
+    shadowEffect->setBlurRadius(28);
+    shadowEffect->setColor(QColor(0, 0, 0, 180));
+    shadowEffect->setOffset(0, 4);
+    m_Frame->setGraphicsEffect(shadowEffect);
 
     // Load user preferences
     userPreference = SettingsManager::loadSettings();
@@ -67,12 +77,13 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     QWidget* mainContentWidget = m_Frame->getMainContentWidget();
     QVBoxLayout* mainContentLayout = m_Frame->getMainLayout();
     
-    // Set nice margins and spacing for the settings contents
-    mainContentLayout->setContentsMargins(15, 15, 15, 15);
-    mainContentLayout->setSpacing(15);
+    // Set 0 top/left/right margins so the tab header and divider line span 100% full width
+    mainContentLayout->setContentsMargins(0, 0, 0, 12);
+    mainContentLayout->setSpacing(8);
 
     // --- Main Tab Widget ---
     m_tabWidget = new QTabWidget(this);
+    m_tabWidget->setObjectName("SettingsTabWidget");
 
     m_tabWidget->addTab(createAppearancePage(), "Appearance");
     m_tabWidget->addTab(createEditorPage(), "Editor");
@@ -81,11 +92,16 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     m_tabWidget->addTab(createExtensionsPage(), "Extensions");
     m_tabWidget->addTab(createAccountPage(), "Account");
 
-    mainContentLayout->addWidget(m_tabWidget);
+    mainContentLayout->addWidget(m_tabWidget, 1);
 
-    // --- Button Box ---
+    // --- Button Box with aligned padding ---
+    auto* buttonContainer = new QWidget(this);
+    auto* buttonLayout = new QHBoxLayout(buttonContainer);
+    buttonLayout->setContentsMargins(20, 4, 20, 4);
+    buttonLayout->setSpacing(0);
     m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply, this);
-    mainContentLayout->addWidget(m_buttonBox);
+    buttonLayout->addWidget(m_buttonBox);
+    mainContentLayout->addWidget(buttonContainer, 0);
 
     // Connect signals
     connect(m_buttonBox, &QDialogButtonBox::accepted, this, &SettingsDialog::accept);
@@ -145,6 +161,8 @@ QWidget* SettingsDialog::createAppearancePage()
 {
     QWidget* pageWidget = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(pageWidget);
+    layout->setContentsMargins(20, 16, 20, 16);
+    layout->setSpacing(12);
 
     // Theme Selection
     QGroupBox* themeGroup = new QGroupBox("Theme", this);
@@ -188,6 +206,8 @@ QWidget* SettingsDialog::createEditorPage()
 {
     QWidget* pageWidget = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(pageWidget);
+    layout->setContentsMargins(20, 16, 20, 16);
+    layout->setSpacing(12);
 
     QCheckBox* autoSaveCheckBox = new QCheckBox("Enable Auto-save", this);
     autoSaveCheckBox->setChecked(true);
@@ -210,6 +230,8 @@ QWidget* SettingsDialog::createAccountPage()
 {
     QWidget* pageWidget = new QWidget(this);
     QFormLayout* layout = new QFormLayout(pageWidget);
+    layout->setContentsMargins(20, 16, 20, 16);
+    layout->setSpacing(12);
 
     QLineEdit* apiKeyLineEdit = new QLineEdit(this);
     apiKeyLineEdit->setPlaceholderText("Enter your API Key here");
@@ -228,6 +250,8 @@ QWidget* SettingsDialog::createTerminalPage()
 {
     QWidget* pageWidget = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(pageWidget);
+    layout->setContentsMargins(20, 16, 20, 16);
+    layout->setSpacing(12);
 
     // ── Shell Group ──
     QGroupBox* shellGroup = new QGroupBox("Shell", this);
@@ -303,6 +327,8 @@ QWidget* SettingsDialog::createBuildPage()
 {
     QWidget* pageWidget = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(pageWidget);
+    layout->setContentsMargins(20, 16, 20, 16);
+    layout->setSpacing(12);
 
     QGroupBox* cmakeGroup = new QGroupBox("CMake Settings", this);
     QFormLayout* cmakeLayout = new QFormLayout(cmakeGroup);
@@ -328,8 +354,8 @@ QWidget* SettingsDialog::createExtensionsPage()
 {
     QWidget* pageWidget = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(pageWidget);
-    layout->setContentsMargins(10, 10, 10, 10);
-    layout->setSpacing(10);
+    layout->setContentsMargins(20, 16, 20, 16);
+    layout->setSpacing(12);
 
     // Top Action Bar
     QHBoxLayout* actionLayout = new QHBoxLayout();

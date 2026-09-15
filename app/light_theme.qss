@@ -258,15 +258,33 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
     background: none;
 }
 
-/* Settings Dialog Visual Differentiation */
+/* ── Settings Dialog: Floating Elevated Surface & Edges ── */
+QDialog#SettingsDialog {
+    background-color: transparent;
+    background: transparent;
+}
+
 QDialog#SettingsDialog QWidget#Frame {
-    border: 2px solid #2196F3;
+    border: 1px solid #c0c0c0;
+    border-radius: 8px;
     background-color: #ffffff;
+}
+
+QDialog#SettingsDialog QWidget#centralDiv {
+    background-color: #ffffff;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
 }
 
 QDialog#SettingsDialog QWidget#secondaryTitleBar {
     background-color: #f0f0f0;
     border-bottom: 1px solid #dcdcdc;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+}
+
+QDialog#SettingsDialog QPushButton#closeButton {
+    border-top-right-radius: 7px;
 }
 
 QLabel#titleText {
@@ -275,27 +293,50 @@ QLabel#titleText {
     margin-left: 5px;
 }
 
-/* Tab Widget & Bar Flat Styling */
-QTabWidget::pane {
-    border: 1px solid #dcdcdc;
+/* Tab Widget & Bar Flat Styling (Continuous Edge-to-Edge Baseline) */
+QTabWidget::pane,
+QTabWidget#SettingsTabWidget::pane {
+    border: none;
+    border-top: 1px solid #dcdcdc;
     background-color: #ffffff;
+    top: -1px;
+}
+
+QTabWidget::tab-bar,
+QTabWidget#SettingsTabWidget::tab-bar {
+    left: 20px;
+    alignment: left;
+}
+
+QTabBar {
+    background-color: transparent;
+    background: transparent;
+    qproperty-drawBase: 0;
 }
 
 QTabBar::tab {
-    background-color: #e0e0e0;
+    background-color: transparent;
+    background: transparent;
     color: #666666;
-    padding: 8px 16px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    margin-right: 2px;
+    font-size: 9.5pt;
+    font-weight: 500;
+    padding: 8px 16px 10px 16px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-right: 4px;
 }
 
-QTabBar::tab:selected, QTabBar::tab:hover {
-    background-color: #ffffff;
+QTabBar::tab:hover {
     color: #212121;
+    background-color: rgba(0, 0, 0, 0.04);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 
 QTabBar::tab:selected {
+    color: #2196F3;
+    font-weight: 600;
+    background-color: transparent;
     border-bottom: 2px solid #2196F3;
 }
 
