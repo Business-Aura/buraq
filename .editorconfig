@@ -1,0 +1,60 @@
+# EditorConfig configuration for Buraq
+# Reference: https://EditorConfig.org
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C++ Source and Header Files
+[*.{cpp,h,hpp,cxx,hxx,c}]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# C# Files
+[*.cs]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+csharp_space_after_cast = false
+csharp_new_line_before_open_brace = all
+csharp_using_directive_placement = outside_namespace:suggestion
+
+# CMake Build Files
+[{CMakeLists.txt,*.cmake}]
+indent_style = space
+indent_size = 4
+
+# Qt Style Sheets
+[*.qss]
+indent_style = space
+indent_size = 4
+
+# JSON Files
+[*.json]
+indent_style = space
+indent_size = 2
+
+# XML & Project Files
+[*.{xml,qrc,csproj,vcxproj,filters,props,targets}]
+indent_style = space
+indent_size = 2
+
+# Shell Scripts (Require LF line endings)
+[*.sh]
+end_of_line = lf
+indent_style = space
+indent_size = 4
+
+# PowerShell Scripts
+[*.ps1]
+indent_style = space
+indent_size = 4
+
+# Markdown Files (Preserve trailing spaces for line breaks)
+[*.md]
+trim_trailing_whitespace = false

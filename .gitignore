@@ -59,6 +59,7 @@ CSharpManaged/bin/
 CSharpManaged/obj/
 CSharpManaged/publish/
 CSharpManaged/host_trace.txt
+host_trace.txt
 
 .idea/
 
